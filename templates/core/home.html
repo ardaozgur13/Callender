@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Bugün{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <h1>Merhaba {{ user.display_name }} 🌿</h1>
+    <p>{% now "j F Y, l" %}</p>
+  </header>
+
+  <section class="card empty" aria-labelledby="empty-title">
+    <span class="empty-icon" aria-hidden="true">🌼</span>
+    <h2 id="empty-title" class="visually-hidden">Bugünün planı</h2>
+    <p>Bugün için planın yok, çayırda gezinme zamanı.</p>
+  </section>
+
+  <div class="grid grid--2">
+    <section class="card card--soft" aria-labelledby="fridge-title">
+      <h2 id="fridge-title">🥛 Yaklaşan SKT'ler</h2>
+      <p>Buzdolabın şimdilik sakin.</p>
+      <span class="badge badge--fresh">taze</span>
+      <span class="badge badge--soon">yaklaşıyor</span>
+      <span class="badge badge--late">süresi geçti</span>
+    </section>
+    <section class="card card--soft" aria-labelledby="chores-title">
+      <h2 id="chores-title">🧺 Ev işleri</h2>
+      <p>Bugün kimseye iş düşmemiş.</p>
+    </section>
+  </div>
+{% endblock %}

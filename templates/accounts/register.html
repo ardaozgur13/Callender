@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Kayıt ol{% endblock %}
+
+{% block guest_content %}
+  <section class="card auth-card" aria-labelledby="register-title">
+    <h1 id="register-title">Aramıza katıl</h1>
+    <p class="muted">Birkaç bilgi yeter, gerisi çayırda bir yürüyüş kadar kolay.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "includes/form.html" with form=form %}
+      <button class="btn btn--block" type="submit">Kayıt ol</button>
+    </form>
+    <p class="auth-switch">Zaten hesabın var mı? <a href="{% url 'login' %}">Giriş yap</a></p>
+  </section>
+{% endblock %}

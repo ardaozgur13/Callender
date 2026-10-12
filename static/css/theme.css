@@ -1,0 +1,52 @@
+/*
+ * Callender tasarım değişkenleri. Tüm renkler ve ölçüler buradan gelir;
+ * bileşenlere renk kodu gömme. Palet: docs/callender.md bölüm 3.
+ */
+:root {
+  /* Renk paleti: toz/mat pastel */
+  --cream:        #FFF9EE; /* ana arka plan, kremsi beyaz */
+  --cream-deep:   #F7EEDC; /* kart/ikincil zemin */
+  --blue:         #BFD8E6; /* kremsi toz mavi (ana vurgu) */
+  --blue-deep:    #8FB3C9; /* buton hover, aktif öğe */
+  --pink:         #F2CFCF; /* kremsi toz pembe (ikincil vurgu) */
+  --pink-deep:    #E3AFB0;
+  --yellow:       #F6E3A1; /* mat tereyağı sarısı (uyarı/vurgu) */
+  --sage:         #CFE0C3; /* çayır yeşili, "tamamlandı/taze" durumu */
+  --text:         #4A4A55; /* koyu gri-lacivert, saf siyah YOK */
+  --text-soft:    #7C7C8A;
+  --danger-soft:  #E8A9A0; /* bozuldu/süresi geçti, bağırmayan kırmızı */
+  --white-soft:   #FFFDF8; /* kart yüzeyi */
+
+  /* Durum renkleri (anlamsal takma adlar) */
+  --status-fresh: var(--sage);
+  --status-soon:  var(--yellow);
+  --status-late:  var(--danger-soft);
+
+  /* Biçim */
+  --radius:       16px;
+  --radius-sm:    10px;
+  --radius-pill:  999px;
+  --shadow:       0 4px 14px rgba(120, 110, 90, 0.10);
+  --shadow-soft:  0 2px 8px rgba(120, 110, 90, 0.08);
+  --focus-ring:   0 0 0 3px var(--blue-deep);
+
+  /* Yazı */
+  --font:         "Nunito", "Quicksand", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fs-sm:        0.875rem;
+  --fs-base:      1rem;
+  --fs-lg:        1.25rem;
+  --fs-xl:        1.6rem;
+
+  /* Boşluk ölçeği */
+  --space-1:      4px;
+  --space-2:      8px;
+  --space-3:      12px;
+  --space-4:      16px;
+  --space-5:      24px;
+  --space-6:      32px;
+
+  /* Düzen */
+  --sidebar-w:    232px;
+  --bottomnav-h:  68px;
+  --content-max:  880px;
+}
