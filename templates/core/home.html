@@ -25,11 +25,21 @@
     {% endif %}
   </section>
 
-  <div class="grid grid--2">
-    <section class="card card--soft" aria-labelledby="fridge-title">
+  <section class="today" aria-labelledby="fridge-title">
+    <div class="section-head">
       <h2 id="fridge-title">🥛 Yaklaşan SKT'ler</h2>
-      <p class="muted">Buzdolabı takibi yakında burada.</p>
-    </section>
+      <a class="btn btn--ghost btn--sm" href="{% url 'fridge' %}">Buzdolabı ›</a>
+    </div>
+    {% if expiring %}
+      <ul class="food-list">
+        {% for food in expiring %}{% include "fridge/_food.html" with compact=True %}{% endfor %}
+      </ul>
+    {% else %}
+      <p class="card card--soft muted">Önümüzdeki 3 günde bitecek bir şey yok. Buzdolabın sakin 🧊</p>
+    {% endif %}
+  </section>
+
+  <div class="grid">
     <section class="card card--soft" aria-labelledby="chores-title">
       <h2 id="chores-title">🧺 Ev işleri</h2>
       <p class="muted">Ev işleri yakında burada.</p>

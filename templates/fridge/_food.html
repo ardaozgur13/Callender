@@ -1,0 +1,36 @@
+{# Bir buzdolabı ürünü satırı. Bağlam: food, isteğe bağlı compact (Bugün sayfası) #}
+<li class="food food--{{ food.status }}">
+  <div class="food-body">
+    <p class="food-name">{{ food.name }}</p>
+    <p class="food-meta">
+      {{ food.get_storage_display }}
+      {% if food.opened_on %} · {{ food.opened_on|date:"j M" }} açıldı{% else %} · Açılmadı{% endif %}
+      {% if food.package_expiry %} · SKT {{ food.package_expiry|date:"j M Y" }}{% endif %}
+      {% if food.family_id %} · {{ food.owner.display_name }} ekledi{% endif %}
+    </p>
+    {% if food.note and not compact %}<p class="food-note">{{ food.note }}</p>{% endif %}
+  </div>
+  <span class="badge badge--{{ food.status }}" title="{{ food.get_status_display }}">
+    {{ food.days_left_label }}{% if food.use_by %}<span class="visually-hidden">, son tüketim {{ food.use_by|date:"j F Y" }}</span>{% endif %}
+  </span>
+  <div class="food-actions">
+    {% if not food.opened_on and not compact %}
+      <form method="post" action="{% url 'food_open_today' food.pk %}">
+        {% csrf_token %}
+        <button class="btn btn--ghost btn--sm" type="submit">Bugün açtım</button>
+      </form>
+    {% endif %}
+    <form method="post" action="{% url 'food_consume' food.pk %}">
+      {% csrf_token %}
+      {% if compact %}<input type="hidden" name="next" value="home">{% endif %}
+      <button class="btn btn--sm" type="submit" aria-label="Tüketildi: {{ food.name }}">✓ Tüketildi</button>
+    </form>
+    {% if not compact %}
+      <a class="btn btn--ghost btn--sm" href="{% url 'food_edit' food.pk %}" aria-label="Düzenle: {{ food.name }}">✏️</a>
+      <form method="post" action="{% url 'food_delete' food.pk %}" onsubmit="return confirm('{{ food.name|escapejs }} silinsin mi?');">
+        {% csrf_token %}
+        <button class="btn btn--ghost btn--sm" type="submit" aria-label="Sil: {{ food.name }}">🗑️</button>
+      </form>
+    {% endif %}
+  </div>
+</li>

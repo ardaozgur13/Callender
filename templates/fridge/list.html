@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Buzdolabım{% endblock %}
+
+{% block content %}
+  <header class="page-header section-head">
+    <div>
+      <h1>{% if active_family %}{{ active_family.name }} buzdolabı{% else %}Buzdolabım{% endif %}</h1>
+      <p>{{ items|length }} / {{ max_items }} ürün · son tüketim tarihine göre sıralı</p>
+    </div>
+    <a class="btn" href="{% url 'food_create' %}">+ Ürün ekle</a>
+  </header>
+
+  {% if items %}
+    <div class="legend" aria-hidden="true">
+      <span class="badge badge--fresh">taze</span>
+      <span class="badge badge--soon">yaklaşıyor</span>
+      <span class="badge badge--late">süresi geçti</span>
+    </div>
+    <ul class="food-list">
+      {% for food in items %}{% include "fridge/_food.html" %}{% endfor %}
+    </ul>
+  {% else %}
+    <section class="card empty">
+      <span class="empty-icon" aria-hidden="true">🧊</span>
+      <p>Buzdolabın bomboş ve tertemiz. İlk ürünü ekleyerek başla.</p>
+    </section>
+  {% endif %}
+
+  <p class="notice">⚠️ {{ safety_notice }}</p>
+{% endblock %}

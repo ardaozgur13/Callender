@@ -6,5 +6,6 @@ urlpatterns = [
     path("", include("accounts.urls")),
     path("takvim/", include("calendar_app.urls")),
     path("aile/", include("families.urls")),
+    path("buzdolabi/", include("fridge.urls")),
     path("", include("core.urls")),
 ]

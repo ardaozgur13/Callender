@@ -27,3 +27,5 @@ INVITE_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
 # Yaklaşan SKT uyarısı (gün)
 EXPIRY_WARNING_DAYS = 3
+# Açıldıktan sonra önerilen gün için üst sınır
+SUGGESTED_DAYS_MAX = 365

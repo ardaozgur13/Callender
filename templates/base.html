@@ -36,7 +36,11 @@
             <span class="nav-icon" aria-hidden="true">📅</span>Takvim
           </a>
         </li>
-        <li><span class="nav-item is-soon" aria-disabled="true" title="Yakında"><span class="nav-icon" aria-hidden="true">🥛</span>Buzdolabı</span></li>
+        <li>
+          <a class="nav-item" href="{% url 'fridge' %}"{% if active_nav == "fridge" %} aria-current="page"{% endif %}>
+            <span class="nav-icon" aria-hidden="true">🥛</span>Buzdolabı
+          </a>
+        </li>
         <li><span class="nav-item is-soon" aria-disabled="true" title="Yakında"><span class="nav-icon" aria-hidden="true">🧺</span>Ev</span></li>
         <li>
           <a class="nav-item" href="{% url 'family_list' %}"{% if active_nav == "family" %} aria-current="page"{% endif %}>

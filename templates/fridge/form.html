@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Ürünü düzenle{% else %}Ürün ekle{% endif %}{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <h1>{% if is_edit %}Ürünü düzenle{% else %}Ürün ekle{% endif %}</h1>
+    {% if is_edit %}
+      <p>{% if item.family %}👨‍👩‍👧 {{ item.family.name }} buzdolabı{% else %}👤 Kişisel buzdolabı{% endif %}</p>
+    {% else %}
+      <p>{% if active_family %}👨‍👩‍👧 {{ active_family.name }} buzdolabına eklenecek; tüm üyeler görür.{% else %}👤 Kişisel buzdolabına eklenecek.{% endif %}</p>
+    {% endif %}
+  </header>
+
+  <section class="card">
+    <form method="post" novalidate id="food-form">
+      {% csrf_token %}
+      <datalist id="shelf-life-rules">
+        {% for rule in rules %}<option value="{{ rule.name }}"></option>{% endfor %}
+      </datalist>
+      {% include "includes/form.html" with form=form %}
+      <p class="suggestion" id="rule-hint" hidden aria-live="polite"></p>
+      <p class="notice">⚠️ {{ safety_notice }}</p>
+      <div class="form-actions">
+        <button class="btn" type="submit">Kaydet</button>
+        <a class="btn btn--ghost" href="{% url 'fridge' %}">Vazgeç</a>
+      </div>
+    </form>
+  </section>
+{{ rules|json_script:"rules-data" }}
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/food-form.js' %}" defer></script>
+{% endblock %}

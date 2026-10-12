@@ -7,8 +7,8 @@ Her aşama bitince Claude Code bu dosyayı günceller. Yeni oturumda önce bunu 
 | 1 | İskelet ve tasarım sistemi | ✅ |
 | 2 | Kimlik doğrulama | ✅ |
 | 3 | Kişisel takvim | ✅ |
-| 4 | Aile grupları | 🟨 sürüyor |
-| 5 | Buzdolabı ve son kullanma | ⬜ |
+| 4 | Aile grupları | ✅ |
+| 5 | Buzdolabı ve son kullanma | 🟨 sürüyor |
 | 6 | Ev işleri ve ev durumu | ⬜ |
 | 7 | Cilalama ve yayın | ⬜ |
 
@@ -68,3 +68,14 @@ Durumlar: ⬜ başlamadı · 🟨 sürüyor · ✅ bitti (kullanıcı onayladı)
 - **Testler:** 85 test geçti. Testlerde parola özeti için MD5 kullanılıyor (`settings.py`, sadece `manage.py test`). Test süresi 7,5 dakikadan 3 dakikaya indi; kalan süre Supabase'e (Frankfurt) ağ gecikmesi.
 - **Migrate uygulandı** (2026-10-13), aile tablolarında RLS otomatik açıldı.
 - **Bilinçli olarak yapılmayanlar:** Davet kodu deneme sınırı (rate limit) yok; 32^8 ≈ 10^12 olasılık prototip için yeterli. Aile kaydını kişisele (ya da tersine) taşıma yok.
+
+### Aşama 5
+- **`fridge.ShelfLifeRule`:** Belgenin 8. bölümündeki 17 satır `fridge/seed_shelf_life.py` içinde; değerler ve `usda`/`estimate` etiketleri belgeyle birebir (11 usda, 6 estimate). Veri migration'ı `0002_seed_shelf_life_rules` yükler (`key`'e göre update_or_create). Yeni ürün eklemek için tabloya satır ekle ve yeni bir veri migration'ı yaz; değer uydurma.
+- **`fridge.FoodItem`:** belgedeki alanlar. `use_by` tek yerde, `FoodItem.compute_use_by()` içinde hesaplanır: açılmışsa açılma + gün, ambalaj SKT'si de varsa erken olanı, sadece SKT varsa o, hiçbiri yoksa boş. `save()` her kayıtta (`update_fields` ile de) yeniden hesaplayıp veritabanına yazar; sıralama ve "yaklaşanlar" sorgusu bu sayede veritabanında yapılır.
+- **Durum:** taze (>3 gün), yaklaşıyor (≤3 gün, `limits.EXPIRY_WARNING_DAYS`), süresi geçti (<0), tarih yok. Etiketler: "5 gün kaldı", "Yarın son gün", "Bugün son gün", "2 gün geçti". Renkler `--status-*` değişkenlerinden.
+- **Öneri:** Ürün adı alanında `<datalist>` öneri listesi var. Ad bir kuralla eşleşince JS gün ve saklama yerini doldurur, kaynağı ve notu gösterir; kullanıcının değiştirdiği güne dokunmaz. Sunucu da adı büyük/küçük harf duyarsız eşleştirip kuralı bağlar; gün boşsa kuraldan doldurur. Zorunlu uyarı metni liste ve form sayfasında var.
+- **İşlemler:** ekle, düzenle, sil, "Bugün açtım" (açılma = bugün, gün boşsa kuraldan), "Tüketildi" (listeden kalkar, `consumed_at` dolar). Açılma tarihi ileri bir tarih olamaz; gün en fazla 365 (`limits.SUGGESTED_DAYS_MAX`).
+- **Bağlam ve yetki:** Takvimle aynı model. Bireysel = kişisel buzdolabı, Aile = ortak buzdolabı (her üye görür ve düzenler, kimin eklediği yazar). Erişimi olmayana 404.
+- **Limit:** 150 aktif (tüketilmemiş) ürün. Belge bunu aile için tanımlıyor; kişisel buzdolabına da aynı sınır uygulandı. Aile ya da kullanıcı satırı kilitlenerek kontrol edilir.
+- **Bugün sayfası:** 3 gün içinde biten ya da süresi geçmiş ürünler (bağlama göre), oradan "Tüketildi" denebilir.
+- **Migrate uygulandı** (2026-10-13), RLS açık. 110 test geçti (~4 dk).
