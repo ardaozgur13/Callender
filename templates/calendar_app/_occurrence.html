@@ -1,0 +1,36 @@
+{# Bir takvim görünümü satırı. Bağlam: occ (Occurrence), isteğe bağlı next (dönüş adresi) #}
+{% with item=occ.item %}
+<li class="item item--{{ item.kind }}{% if item.is_done %} is-done{% endif %}">
+  {% if item.is_checkable %}
+    <form method="post" action="{% url 'item_toggle_done' item.pk %}" class="item-check">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <button type="submit" class="check-btn{% if item.is_done %} is-checked{% endif %}"
+              aria-label="{% if item.is_done %}Tamamlanmadı olarak işaretle{% else %}Tamamlandı olarak işaretle{% endif %}: {{ item.title }}"
+              aria-pressed="{% if item.is_done %}true{% else %}false{% endif %}">{% if item.is_done %}✓{% endif %}</button>
+    </form>
+  {% else %}
+    <span class="item-icon" aria-hidden="true">{{ item.icon }}</span>
+  {% endif %}
+
+  <div class="item-body">
+    <p class="item-title">{{ item.title }}{% if occ.years %} <span class="item-years">({{ occ.years }}. yıl)</span>{% endif %}</p>
+    <p class="item-meta">
+      {{ item.get_kind_display }}
+      · {% if item.all_day %}Tüm gün{% else %}{{ item.start_time|time:"H:i" }}{% if item.end_time %}–{{ item.end_time|time:"H:i" }}{% endif %}{% endif %}
+      {% if item.repeat == "yearly" %} · 🔁 Her yıl{% endif %}
+    </p>
+    {% if item.description %}<p class="item-desc">{{ item.description|linebreaksbr }}</p>{% endif %}
+  </div>
+
+  <div class="item-actions">
+    <a class="btn btn--ghost btn--sm" href="{% url 'item_edit' item.pk %}" aria-label="Düzenle: {{ item.title }}">✏️</a>
+    <form method="post" action="{% url 'item_delete' item.pk %}"
+          onsubmit="return confirm('Bu kaydı silmek istediğine emin misin?{% if item.repeat == "yearly" %} Her yıl tekrar eden kaydın tamamı silinir.{% endif %}');">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <button type="submit" class="btn btn--ghost btn--sm" aria-label="Sil: {{ item.title }}">🗑️</button>
+    </form>
+  </div>
+</li>
+{% endwith %}

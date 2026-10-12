@@ -31,7 +31,11 @@
             <span class="nav-icon" aria-hidden="true">☀️</span>Bugün
           </a>
         </li>
-        <li><span class="nav-item is-soon" aria-disabled="true" title="Yakında"><span class="nav-icon" aria-hidden="true">📅</span>Takvim</span></li>
+        <li>
+          <a class="nav-item" href="{% url 'calendar' %}"{% if active_nav == "calendar" %} aria-current="page"{% endif %}>
+            <span class="nav-icon" aria-hidden="true">📅</span>Takvim
+          </a>
+        </li>
         <li><span class="nav-item is-soon" aria-disabled="true" title="Yakında"><span class="nav-icon" aria-hidden="true">🥛</span>Buzdolabı</span></li>
         <li><span class="nav-item is-soon" aria-disabled="true" title="Yakında"><span class="nav-icon" aria-hidden="true">🧺</span>Ev</span></li>
         <li><span class="nav-item is-soon" aria-disabled="true" title="Yakında"><span class="nav-icon" aria-hidden="true">👨‍👩‍👧</span>Aile</span></li>

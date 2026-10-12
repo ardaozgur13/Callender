@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ day|date:"j F Y" }}{% endblock %}
+
+{% block content %}
+  <header class="page-header month-header">
+    <a class="btn btn--ghost" href="{% url 'calendar_day' prev_day.year prev_day.month prev_day.day %}" aria-label="Önceki gün">‹</a>
+    <div class="day-title">
+      <h1>{{ day|date:"j F" }}</h1>
+      <p>{{ day|date:"l, Y" }}{% if day == today %} · Bugün{% endif %}</p>
+    </div>
+    <a class="btn btn--ghost" href="{% url 'calendar_day' next_day.year next_day.month next_day.day %}" aria-label="Sonraki gün">›</a>
+  </header>
+
+  <div class="month-actions">
+    <a class="btn btn--ghost btn--sm" href="{% url 'calendar_month' day.year day.month %}">‹ Aya dön</a>
+    <a class="btn btn--sm" href="{% url 'item_create' %}?tarih={{ day|date:'Y-m-d' }}">+ Yeni kayıt</a>
+  </div>
+
+  {% if occurrences %}
+    <ul class="item-list">
+      {% for occ in occurrences %}{% include "calendar_app/_occurrence.html" %}{% endfor %}
+    </ul>
+    <p class="muted day-count">Bu güne eklediğin kayıt: {{ count }} / {{ max_items }}</p>
+  {% else %}
+    <section class="card empty">
+      <span class="empty-icon" aria-hidden="true">🌼</span>
+      <p>Bu gün için planın yok, çayırda gezinme zamanı.</p>
+    </section>
+  {% endif %}
+{% endblock %}

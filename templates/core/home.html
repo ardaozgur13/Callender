@@ -5,26 +5,34 @@
 {% block content %}
   <header class="page-header">
     <h1>Merhaba {{ user.display_name }} 🌿</h1>
-    <p>{% now "j F Y, l" %}</p>
+    <p>{{ today|date:"j F Y, l" }}</p>
   </header>
 
-  <section class="card empty" aria-labelledby="empty-title">
-    <span class="empty-icon" aria-hidden="true">🌼</span>
-    <h2 id="empty-title" class="visually-hidden">Bugünün planı</h2>
-    <p>Bugün için planın yok, çayırda gezinme zamanı.</p>
+  <section class="today" aria-labelledby="today-title">
+    <div class="section-head">
+      <h2 id="today-title">Bugün</h2>
+      <a class="btn btn--sm" href="{% url 'item_create' %}?tarih={{ today|date:'Y-m-d' }}">+ Ekle</a>
+    </div>
+    {% if occurrences %}
+      <ul class="item-list">
+        {% for occ in occurrences %}{% include "calendar_app/_occurrence.html" %}{% endfor %}
+      </ul>
+    {% else %}
+      <div class="card empty">
+        <span class="empty-icon" aria-hidden="true">🌼</span>
+        <p>Bugün için planın yok, çayırda gezinme zamanı.</p>
+      </div>
+    {% endif %}
   </section>
 
   <div class="grid grid--2">
     <section class="card card--soft" aria-labelledby="fridge-title">
       <h2 id="fridge-title">🥛 Yaklaşan SKT'ler</h2>
-      <p>Buzdolabın şimdilik sakin.</p>
-      <span class="badge badge--fresh">taze</span>
-      <span class="badge badge--soon">yaklaşıyor</span>
-      <span class="badge badge--late">süresi geçti</span>
+      <p class="muted">Buzdolabı takibi yakında burada.</p>
     </section>
     <section class="card card--soft" aria-labelledby="chores-title">
       <h2 id="chores-title">🧺 Ev işleri</h2>
-      <p>Bugün kimseye iş düşmemiş.</p>
+      <p class="muted">Ev işleri yakında burada.</p>
     </section>
   </div>
 {% endblock %}

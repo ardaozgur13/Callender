@@ -42,3 +42,16 @@ Durumlar: ⬜ başlamadı · 🟨 sürüyor · ✅ bitti (kullanıcı onayladı)
 - **Güvenlik, RLS:** Supabase `public` şemasını kendi REST API'si (PostgREST) üzerinden dışarıya açar. RLS kapalıyken `accounts_user` (parola özetleri) ve `django_session` anon anahtarla okunabiliyordu. Tüm tablolarda RLS açıldı, hiç kural tanımlanmadı, yani API erişimi tamamen kapalı. Django tablo sahibi `postgres` rolüyle bağlandığı için etkilenmiyor. `core/db.py` + `core/apps.py` içindeki `post_migrate` sinyali her migrate'ten sonra yeni tablolarda RLS'yi otomatik açar. Supabase güvenlik danışmanında yalnızca bilgi seviyesinde "RLS enabled no policy" notu kalır; bu bilinçli bir durum.
 - **Git:** depo `main` dalında, uzak depo `origin` = https://github.com/ardaozgur13/Callender
 - **Supabase'te kalan:** `test_callender` adlı test veritabanı (boş tablolar, `--keepdb` ile yeniden kullanılıyor). İstenirse Supabase SQL Editor'da `DROP DATABASE test_callender WITH (FORCE);` ile silinebilir.
+
+### Aşama 3
+- **`calendar_app.CalendarItem`:** `owner`, `kind` (etkinlik, görev, amaç, doğum günü, yıldönümü, hatırlatma), `title` (80), `description` (500), `date`, `all_day`, `start_time`/`end_time`, `repeat` (`none`/`yearly`), `is_done`, zaman damgaları. `(owner, date)` indeksli.
+- **`family` alanı henüz yok:** `families.Family` modeli Aşama 4'te gelecek. Alan orada `null=True` ile eklenecek; mevcut öğeler kişisel kalır.
+- **Tekrar:** Prototipte sadece `none` ve `yearly` var (belgeye uygun); haftalık/aylık daha sonra. Yıllık öğeler tek satırda tutulur, `services.occurrences_between` ile hesaplanır. İlk tarihten önceki yıllarda görünmez; 29 Şubat artık olmayan yıllarda 28 Şubat'ta gösterilir. Doğum günü/yıldönümünde "(N. yıl)" gösterilir.
+- **Günlük limit (20):** `services.save_item` içinde, sunucu tarafında. Sayım öğenin kayıtlı `date`'ine göre yapılır; yıllık tekrarlar sadece ilk tarihlerinde sayılır. Aynı anda iki istek limiti aşmasın diye kullanıcı satırı `select_for_update` ile kilitlenir. Düzenlemede öğe kendi gününde kalıyorsa kendisi sayılmaz.
+- **Silme:** Yıllık öğe silinince tüm yılları silinir (onay mesajında belirtiliyor). Tek bir yılı atlama özelliği yok.
+- **"Tamamlandı":** sadece görev ve amaç için.
+- **Sayfalar:** `/takvim/` (bu ay), `/takvim/<yıl>/<ay>/`, `/takvim/<yıl>/<ay>/<gün>/`, `/takvim/ekle/?tarih=…`, `/takvim/oge/<id>/duzenle|sil|tamamla/`. Ay görünümü Pazartesi'den başlar; mobilde hücrelerde sadece ikonlar, masaüstünde başlıklar görünür. "Bugün" sayfası günün öğelerini gösterir.
+- **Yetki:** Tüm sorgular `owner=request.user`; başkasının öğesi 404. `next` yönlendirmesi sadece site içi adreslere izin verir.
+- **JS:** `static/js/item-form.js`: doğum günü/yıldönümü seçilince tekrar "Her yıl" olur, "Tüm gün" işaretliyken saat alanları gizlenir. JS olmadan da form çalışır.
+- **Migrate uygulandı** (2026-10-13), yeni tabloda RLS otomatik açıldı. 55 test geçti.
+- **Görsel kontrol:** Giriş gerektiren sayfalar tarayıcıda Claude tarafından kontrol edilmedi; bunun için hesap açmak gerekirdi. Kullanıcı kontrol edecek.

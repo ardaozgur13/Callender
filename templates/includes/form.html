@@ -6,10 +6,18 @@
 {% endif %}
 {% for field in form.hidden_fields %}{{ field }}{% endfor %}
 {% for field in form.visible_fields %}
-  <div class="field{% if field.errors %} field--error{% endif %}">
-    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-    {{ field }}
-    {% if field.help_text %}<small class="field-help" id="{{ field.auto_id }}_helptext">{{ field.help_text|safe }}</small>{% endif %}
-    {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
-  </div>
+  {% if field.widget_type == "checkbox" %}
+    <div class="field field--checkbox{% if field.errors %} field--error{% endif %}">
+      {{ field }}
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+    </div>
+  {% else %}
+    <div class="field{% if field.errors %} field--error{% endif %}">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.help_text %}<small class="field-help" id="{{ field.auto_id }}_helptext">{{ field.help_text|safe }}</small>{% endif %}
+      {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+    </div>
+  {% endif %}
 {% endfor %}

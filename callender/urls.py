@@ -4,5 +4,6 @@ from django.urls import include, path
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("accounts.urls")),
+    path("takvim/", include("calendar_app.urls")),
     path("", include("core.urls")),
 ]

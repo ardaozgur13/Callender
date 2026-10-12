@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Kaydı düzenle{% else %}Yeni kayıt{% endif %}{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <h1>{% if is_edit %}Kaydı düzenle{% else %}Yeni kayıt{% endif %}</h1>
+  </header>
+
+  <section class="card">
+    <form method="post" novalidate id="item-form">
+      {% csrf_token %}
+      {% include "includes/form.html" with form=form %}
+      <div class="form-actions">
+        <button class="btn" type="submit">Kaydet</button>
+        <a class="btn btn--ghost" href="{{ back_url }}">Vazgeç</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/item-form.js' %}" defer></script>
+{% endblock %}

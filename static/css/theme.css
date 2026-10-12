@@ -22,6 +22,14 @@
   --status-soon:  var(--yellow);
   --status-late:  var(--danger-soft);
 
+  /* Takvim öğe türleri */
+  --kind-event:       var(--blue);
+  --kind-task:        var(--sage);
+  --kind-goal:        var(--yellow);
+  --kind-birthday:    var(--pink);
+  --kind-anniversary: var(--pink-deep);
+  --kind-reminder:    var(--cream-deep);
+
   /* Biçim */
   --radius:       16px;
   --radius-sm:    10px;

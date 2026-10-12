@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Takvim{% endblock %}
+
+{% block content %}
+  <header class="page-header month-header">
+    <a class="btn btn--ghost" href="{% url 'calendar_month' prev_month.year prev_month.month %}" aria-label="Önceki ay">‹</a>
+    <h1>{{ month_start|date:"F Y" }}</h1>
+    <a class="btn btn--ghost" href="{% url 'calendar_month' next_month.year next_month.month %}" aria-label="Sonraki ay">›</a>
+  </header>
+
+  <div class="month-actions">
+    <a class="btn btn--ghost btn--sm" href="{% url 'calendar' %}">Bugüne dön</a>
+    <a class="btn btn--sm" href="{% url 'item_create' %}?tarih={{ today|date:'Y-m-d' }}">+ Yeni kayıt</a>
+  </div>
+
+  <div class="month" role="grid" aria-label="{{ month_start|date:'F Y' }} takvimi">
+    <div class="month-row month-weekdays" role="row">
+      {% for name in weekday_names %}<div class="month-weekday" role="columnheader">{{ name }}</div>{% endfor %}
+    </div>
+    {% for week in weeks %}
+      <div class="month-row" role="row">
+        {% for cell in week %}
+          <a role="gridcell"
+             class="month-day{% if not cell.in_month %} is-outside{% endif %}{% if cell.is_today %} is-today{% endif %}"
+             href="{% url 'calendar_day' cell.date.year cell.date.month cell.date.day %}"
+             aria-label="{{ cell.date|date:'j F l' }}{% if cell.occurrences %}, {{ cell.occurrences|length }} kayıt{% endif %}">
+            <span class="month-day-number">{{ cell.date.day }}</span>
+            <span class="month-day-items" aria-hidden="true">
+              {% for occ in cell.occurrences|slice:":3" %}
+                <span class="chip chip--{{ occ.item.kind }}{% if occ.item.is_done %} is-done{% endif %}">{{ occ.item.icon }}<span class="chip-title"> {{ occ.item.title }}</span></span>
+              {% endfor %}
+              {% if cell.occurrences|length > 3 %}<span class="chip chip--more">+{{ cell.occurrences|length|add:"-3" }}</span>{% endif %}
+            </span>
+          </a>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
