@@ -5,8 +5,8 @@ Her aşama bitince Claude Code bu dosyayı günceller. Yeni oturumda önce bunu 
 | Aşama | Konu | Durum |
 |---|---|---|
 | 1 | İskelet ve tasarım sistemi | ✅ |
-| 2 | Kimlik doğrulama | 🟨 sürüyor |
-| 3 | Kişisel takvim | ⬜ |
+| 2 | Kimlik doğrulama | ✅ |
+| 3 | Kişisel takvim | 🟨 sürüyor |
 | 4 | Aile grupları | ⬜ |
 | 5 | Buzdolabı ve son kullanma | ⬜ |
 | 6 | Ev işleri ve ev durumu | ⬜ |
