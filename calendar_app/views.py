@@ -10,18 +10,19 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from core import limits
+from families.context import get_active_family
 
 from . import services
 from .forms import CalendarItemForm
-from .models import CalendarItem
+
 
 WEEKDAY_NAMES = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
 MIN_YEAR, MAX_YEAR = 1900, 2200
 
 
 def _user_item(request, pk):
-    """Sadece giriş yapan kullanıcının öğesini döndürür; başkasınınki için 404."""
-    return get_object_or_404(CalendarItem, pk=pk, owner=request.user)
+    """Kullanıcının erişebildiği öğe (kişisel ya da üyesi olduğu aileninki); değilse 404."""
+    return get_object_or_404(services.accessible_items(request.user), pk=pk)
 
 
 def _day_url(day):
@@ -43,7 +44,7 @@ def month_view(request, year=None, month=None):
     first = _safe_date(year, month) if year else today.replace(day=1)
 
     weeks = calendar.Calendar(firstweekday=0).monthdatescalendar(first.year, first.month)
-    by_date = services.occurrences_between(request.user, weeks[0][0], weeks[-1][-1])
+    by_date = services.occurrences_between(request.user, weeks[0][0], weeks[-1][-1], get_active_family(request))
 
     prev_month = (first - timedelta(days=1)).replace(day=1)
     next_month = (first + timedelta(days=32)).replace(day=1)
@@ -65,7 +66,7 @@ def month_view(request, year=None, month=None):
 
 def day_view(request, year, month, day):
     current = _safe_date(year, month, day)
-    occurrences = services.occurrences_on(request.user, current)
+    occurrences = services.occurrences_on(request.user, current, get_active_family(request))
     return render(request, "calendar_app/day.html", {
         "active_nav": "calendar",
         "day": current,
@@ -78,9 +79,11 @@ def day_view(request, year, month, day):
     })
 
 
-def _save_form(request, form, success_message):
+def _save_form(request, form, success_message, family=None):
     """Formu servis üzerinden kaydeder; limit aşılırsa forma hata ekler."""
     item = form.save(commit=False)
+    if item.pk is None:
+        item.family = family  # Yeni öğe seçili bağlama (Bireysel ya da aile) eklenir
     try:
         services.save_item(request.user, item)
     except services.DailyLimitError as error:
@@ -102,7 +105,7 @@ def item_create(request):
 
     form = CalendarItemForm(request.POST or None, initial=initial)
     if request.method == "POST" and form.is_valid():
-        item = _save_form(request, form, "Kaydedildi 🌼")
+        item = _save_form(request, form, "Kaydedildi 🌼", family=get_active_family(request))
         if item:
             return redirect(_day_url(item.date))
     return render(request, "calendar_app/item_form.html", {

@@ -6,6 +6,8 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
+from families.services import leave_all_families
+
 from .forms import DeleteAccountForm, DisplayNameForm, LoginForm, RegisterForm
 
 
@@ -68,6 +70,8 @@ def delete_account(request):
     user = request.user
     form = DeleteAccountForm(user, request.POST, prefix="del")
     if form.is_valid():
+        # Ailelerden kurallara uygun ayrıl (kurucu devri / son üyede aile silme)
+        leave_all_families(user)
         logout(request)
         user.delete()
         messages.info(request, "Hesabın silindi. Yolun açık olsun 🌿")

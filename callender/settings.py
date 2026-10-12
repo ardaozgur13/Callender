@@ -3,6 +3,7 @@ Callender ayarları. Tüm gizli/ortama bağlı değerler ortam değişkenlerinde
 (yerelde .env dosyası, canlıda Vercel ortam değişkenleri).
 """
 import os
+import sys
 from pathlib import Path
 
 import dj_database_url
@@ -77,6 +78,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "families.context.family_context",
             ],
         },
     },
@@ -114,6 +116,11 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
+# Testlerde hızlı (güvensiz) parola özeti: testler çok kullanıcı oluşturur, gerçek
+# PBKDF2 her birinde ~0,5 sn harcar. Uygulamanın kendisi her zaman varsayılan güçlü özeti kullanır.
+if len(sys.argv) > 1 and sys.argv[1] == "test":
+    PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 # Dil ve saat dilimi
 LANGUAGE_CODE = "tr"

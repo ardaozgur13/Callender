@@ -6,6 +6,11 @@
 {% block content %}
   <header class="page-header">
     <h1>{% if is_edit %}Kaydı düzenle{% else %}Yeni kayıt{% endif %}</h1>
+    {% if is_edit %}
+      <p>{% if item.family %}👨‍👩‍👧 {{ item.family.name }} ailesinin kaydı{% else %}👤 Kişisel kayıt{% endif %}</p>
+    {% else %}
+      <p>{% if active_family %}👨‍👩‍👧 {{ active_family.name }} ailesine eklenecek; tüm üyeler görür.{% else %}👤 Kişisel takvimine eklenecek; sadece sen görürsün.{% endif %}</p>
+    {% endif %}
   </header>
 
   <section class="card">

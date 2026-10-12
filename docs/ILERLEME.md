@@ -6,8 +6,8 @@ Her aşama bitince Claude Code bu dosyayı günceller. Yeni oturumda önce bunu 
 |---|---|---|
 | 1 | İskelet ve tasarım sistemi | ✅ |
 | 2 | Kimlik doğrulama | ✅ |
-| 3 | Kişisel takvim | 🟨 sürüyor |
-| 4 | Aile grupları | ⬜ |
+| 3 | Kişisel takvim | ✅ |
+| 4 | Aile grupları | 🟨 sürüyor |
 | 5 | Buzdolabı ve son kullanma | ⬜ |
 | 6 | Ev işleri ve ev durumu | ⬜ |
 | 7 | Cilalama ve yayın | ⬜ |
@@ -55,3 +55,16 @@ Durumlar: ⬜ başlamadı · 🟨 sürüyor · ✅ bitti (kullanıcı onayladı)
 - **JS:** `static/js/item-form.js`: doğum günü/yıldönümü seçilince tekrar "Her yıl" olur, "Tüm gün" işaretliyken saat alanları gizlenir. JS olmadan da form çalışır.
 - **Migrate uygulandı** (2026-10-13), yeni tabloda RLS otomatik açıldı. 55 test geçti.
 - **Görsel kontrol:** Giriş gerektiren sayfalar tarayıcıda Claude tarafından kontrol edilmedi; bunun için hesap açmak gerekirdi. Kullanıcı kontrol edecek.
+
+### Aşama 4
+- **Modeller:** `families.Family` (`name` 40, `invite_code` benzersiz, `created_by` SET_NULL), `families.FamilyMember` (`role` owner/member, `joined_at`, `(family, user)` benzersiz). `CalendarItem.family` eklendi (null = kişisel; aile silinince aile öğeleri de silinir).
+- **Servisler (`families/services.py`):** kurma (kurucu = owner), kodla katılma, ayrılma, üye çıkarma, kod yenileme, aileyi silme. Davet kodu `secrets` ile, `limits.INVITE_CODE_ALPHABET` (0/O/1/I yok), 8 karakter. Girilen kod büyük harfe çevrilir; boşluk ve tireler atılır.
+- **Limitler:** 2 aile (kurma + katılma), aile başına 8 üye. Kullanıcı ve aile satırı kilitlenerek kontrol edilir (eşzamanlı isteklere karşı).
+- **Ayrılma:** Kurucu ayrılırsa en eski üye kurucu olur; son üye ayrılırsa aile ve aile kayıtları silinir. Hesap silinirken önce tüm ailelerden bu kurallarla ayrılınır. Not: silinen hesabın aile kayıtları da silinir (`owner` CASCADE).
+- **Yetki:** Aile sayfaları ve işlemleri üye olmayana 404 döner (ailenin var olduğu bile sızmaz). Yeniden adlandırma, kod yenileme, üye çıkarma ve silme sadece kurucuda. Aile takvim kayıtlarını her üye düzenleyip silebilir (belge: "tüm üyeler eşit yetkili"). Düzenleyen değişse de kaydın `owner`'ı değişmez.
+- **Bağlam seçici:** Sayfanın üstünde "👤 Bireysel / 👨‍👩‍👧 Aile adı" seçimi (en az bir ailesi olana görünür). Seçim oturumda (`active_family_id`) tutulur, her istekte üyelik yeniden doğrulanır; üyelik bittiyse Bireysel'e döner. Bireysel = sadece kişisel kayıtlar; Aile = o ailenin tüm kayıtları (kimin eklediği yazar). Yeni kayıt seçili bağlama eklenir; form başlığı nereye ekleneceğini söyler. Bugün sayfası da bağlama göre.
+- **Günlük limit:** Belgeye uygun olarak kişisel + kendi eklediğin aile kayıtları birlikte sayılır; başka üyenin eklediği kayıtlar senin kotana sayılmaz.
+- **Kod kopyalama:** Aile sayfasında "Kopyala" butonu (Clipboard API).
+- **Testler:** 85 test geçti. Testlerde parola özeti için MD5 kullanılıyor (`settings.py`, sadece `manage.py test`). Test süresi 7,5 dakikadan 3 dakikaya indi; kalan süre Supabase'e (Frankfurt) ağ gecikmesi.
+- **Migrate uygulandı** (2026-10-13), aile tablolarında RLS otomatik açıldı.
+- **Bilinçli olarak yapılmayanlar:** Davet kodu deneme sınırı (rate limit) yok; 32^8 ≈ 10^12 olasılık prototip için yeterli. Aile kaydını kişisele (ya da tersine) taşıma yok.

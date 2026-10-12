@@ -5,5 +5,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("accounts.urls")),
     path("takvim/", include("calendar_app.urls")),
+    path("aile/", include("families.urls")),
     path("", include("core.urls")),
 ]

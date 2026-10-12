@@ -1,0 +1,15 @@
+{# Bağlam seçici: Bireysel ya da üyesi olunan bir aile. Sadece en az bir ailesi olana gösterilir. #}
+{% if my_families %}
+  <form class="context-switcher{% if active_family %} is-family{% endif %}" method="post" action="{% url 'switch_context' %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <label for="context-select">Görünüm</label>
+    <select id="context-select" name="family" onchange="this.form.submit()">
+      <option value=""{% if not active_family %} selected{% endif %}>👤 Bireysel</option>
+      {% for family in my_families %}
+        <option value="{{ family.pk }}"{% if active_family and active_family.pk == family.pk %} selected{% endif %}>👨‍👩‍👧 {{ family.name }}</option>
+      {% endfor %}
+    </select>
+    <noscript><button class="btn btn--sm" type="submit">Geç</button></noscript>
+  </form>
+{% endif %}

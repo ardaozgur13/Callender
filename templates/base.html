@@ -38,7 +38,11 @@
         </li>
         <li><span class="nav-item is-soon" aria-disabled="true" title="Yakında"><span class="nav-icon" aria-hidden="true">🥛</span>Buzdolabı</span></li>
         <li><span class="nav-item is-soon" aria-disabled="true" title="Yakında"><span class="nav-icon" aria-hidden="true">🧺</span>Ev</span></li>
-        <li><span class="nav-item is-soon" aria-disabled="true" title="Yakında"><span class="nav-icon" aria-hidden="true">👨‍👩‍👧</span>Aile</span></li>
+        <li>
+          <a class="nav-item" href="{% url 'family_list' %}"{% if active_nav == "family" %} aria-current="page"{% endif %}>
+            <span class="nav-icon" aria-hidden="true">👨‍👩‍👧</span>Aile
+          </a>
+        </li>
         <li>
           <a class="nav-item nav-item--desktop" href="{% url 'settings' %}"{% if active_nav == "settings" %} aria-current="page"{% endif %}>
             <span class="nav-icon" aria-hidden="true">⚙️</span>Ayarlar
@@ -48,6 +52,7 @@
     </nav>
 
     <main id="main" class="main">
+      {% include "includes/context_switcher.html" %}
       {% include "includes/messages.html" %}
       {% block content %}{% endblock %}
     </main>

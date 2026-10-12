@@ -43,6 +43,11 @@ class CalendarItem(models.Model):
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="calendar_items", verbose_name="oluşturan"
     )
+    # Boş = kişisel öğe; dolu = ailenin tüm üyelerinin gördüğü aile öğesi
+    family = models.ForeignKey(
+        "families.Family", on_delete=models.CASCADE, null=True, blank=True, related_name="calendar_items",
+        verbose_name="aile",
+    )
     kind = models.CharField("tür", max_length=20, choices=Kind.choices, default=Kind.EVENT)
     title = models.CharField("başlık", max_length=limits.TITLE_MAX)
     description = models.TextField("açıklama", max_length=limits.DESCRIPTION_MAX, blank=True)

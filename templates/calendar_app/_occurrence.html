@@ -19,6 +19,7 @@
       {{ item.get_kind_display }}
       · {% if item.all_day %}Tüm gün{% else %}{{ item.start_time|time:"H:i" }}{% if item.end_time %}–{{ item.end_time|time:"H:i" }}{% endif %}{% endif %}
       {% if item.repeat == "yearly" %} · 🔁 Her yıl{% endif %}
+      {% if item.family_id %} · {{ item.owner.display_name }} ekledi{% endif %}
     </p>
     {% if item.description %}<p class="item-desc">{{ item.description|linebreaksbr }}</p>{% endif %}
   </div>

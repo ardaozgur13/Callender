@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Aile{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <h1>Aile</h1>
+    <p>Takvimi, buzdolabını ve ev işlerini ailenle paylaş.</p>
+  </header>
+
+  {% if memberships %}
+    <ul class="family-list">
+      {% for m in memberships %}
+        <li>
+          <a class="card family-card" href="{% url 'family_detail' m.family.pk %}">
+            <span class="family-card-icon" aria-hidden="true">👨‍👩‍👧</span>
+            <span class="family-card-body">
+              <strong>{{ m.family.name }}</strong>
+              <small class="muted">{{ m.get_role_display }}</small>
+            </span>
+            <span aria-hidden="true">›</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <section class="card empty">
+      <span class="empty-icon" aria-hidden="true">🏡</span>
+      <p>Henüz bir ailen yok. Bir aile kur ya da sana gönderilen kodla katıl.</p>
+    </section>
+  {% endif %}
+
+  {% if can_add %}
+    <div class="grid grid--2">
+      <section class="card" aria-labelledby="create-title">
+        <h2 id="create-title">Aile kur</h2>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="action" value="create">
+          {% include "includes/form.html" with form=create_form %}
+          <button class="btn" type="submit">Kur</button>
+        </form>
+      </section>
+      <section class="card" aria-labelledby="join-title">
+        <h2 id="join-title">Kodla katıl</h2>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="action" value="join">
+          {% include "includes/form.html" with form=join_form %}
+          <button class="btn btn--secondary" type="submit">Katıl</button>
+        </form>
+      </section>
+    </div>
+  {% else %}
+    <p class="card card--soft">En fazla {{ max_families }} aileye üye olabilirsin. Yeni bir aileye katılmak için önce birinden ayrılman gerekir.</p>
+  {% endif %}
+{% endblock %}

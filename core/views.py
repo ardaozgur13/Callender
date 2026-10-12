@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from calendar_app import services as calendar_services
+from families.context import get_active_family
 
 
 def home(request):
@@ -10,5 +11,5 @@ def home(request):
     return render(request, "core/home.html", {
         "active_nav": "home",
         "today": today,
-        "occurrences": calendar_services.occurrences_on(request.user, today),
+        "occurrences": calendar_services.occurrences_on(request.user, today, get_active_family(request)),
     })
