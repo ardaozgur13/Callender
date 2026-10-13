@@ -3,11 +3,14 @@ from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth.forms import PasswordChangeForm
+import json
+
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
-from django.views.decorators.http import require_POST
+from django.utils import timezone
+from django.views.decorators.http import require_GET, require_POST
 
-from families.services import leave_all_families
-
+from . import services
 from .forms import DeleteAccountForm, DisplayNameForm, LoginForm, RegisterForm
 
 
@@ -70,10 +73,8 @@ def delete_account(request):
     user = request.user
     form = DeleteAccountForm(user, request.POST, prefix="del")
     if form.is_valid():
-        # Ailelerden kurallara uygun ayrıl (kurucu devri / son üyede aile silme)
-        leave_all_families(user)
         logout(request)
-        user.delete()
+        services.delete_account(user)
         messages.info(request, "Hesabın silindi. Yolun açık olsun 🌿")
         return redirect("login")
     return render(request, "accounts/settings.html", {
@@ -82,3 +83,14 @@ def delete_account(request):
         "delete_form": form,
         "active_nav": "settings",
     })
+
+
+@require_GET
+def export_data(request):
+    """KVKK: kullanıcının kendi verisini JSON dosyası olarak indirir."""
+    payload = json.dumps(services.export_data(request.user), ensure_ascii=False, indent=2)
+    response = HttpResponse(payload, content_type="application/json; charset=utf-8")
+    filename = f"callender-verilerim-{timezone.localdate():%Y%m%d}.json"
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    response["Cache-Control"] = "no-store"
+    return response

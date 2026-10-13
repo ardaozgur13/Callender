@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+
+{% block title %}Sayfa bulunamadı{% endblock %}
+
+{% block content %}{% include "includes/error_body.html" with icon="🌾" heading="Bu sayfayı bulamadık" text="Aradığın sayfa taşınmış, silinmiş ya da hiç var olmamış olabilir." %}{% endblock %}
+{% block guest_content %}{% include "includes/error_body.html" with icon="🌾" heading="Bu sayfayı bulamadık" text="Aradığın sayfa taşınmış, silinmiş ya da hiç var olmamış olabilir." %}{% endblock %}

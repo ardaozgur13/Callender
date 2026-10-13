@@ -13,9 +13,10 @@
   --yellow:       #F6E3A1; /* mat tereyağı sarısı (uyarı/vurgu) */
   --sage:         #CFE0C3; /* çayır yeşili, "tamamlandı/taze" durumu */
   --text:         #4A4A55; /* koyu gri-lacivert, saf siyah YOK */
-  --text-soft:    #7C7C8A;
+  --text-soft:    #6B6B78; /* belgede #7C7C8A; kremsi zeminde 4,5:1 kontrast (WCAG AA) için koyulaştırıldı */
   --danger-soft:  #E8A9A0; /* bozuldu/süresi geçti, bağırmayan kırmızı */
   --white-soft:   #FFFDF8; /* kart yüzeyi */
+  --text-strong:  #3A3A44; /* renkli rozet/butonlarda yeterli kontrast için */
 
   /* Durum renkleri (anlamsal takma adlar) */
   --status-fresh: var(--sage);

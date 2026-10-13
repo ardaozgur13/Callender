@@ -2,7 +2,10 @@
 Bağlam seçici: kullanıcı "Bireysel" ya da üyesi olduğu bir aile görünümündedir.
 Seçim oturumda tutulur ve her istekte üyelik yeniden doğrulanır.
 """
+from django.utils.functional import SimpleLazyObject
+
 from .models import Family
+from .permissions import owned_family_ids
 
 SESSION_KEY = "active_family_id"
 
@@ -34,4 +37,6 @@ def family_context(request):
     return {
         "active_family": get_active_family(request),
         "my_families": Family.objects.filter(memberships__user=request.user).order_by("name"),
+        # Şablonlarda düzenle/sil butonlarını göstermek için (yetki asıl olarak view'da kontrol edilir)
+        "owned_family_ids": SimpleLazyObject(lambda: owned_family_ids(request.user)),
     }

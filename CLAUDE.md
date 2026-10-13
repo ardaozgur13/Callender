@@ -29,6 +29,14 @@ Tam proje belgesi: `docs/callender.md` (model, limitler, sayfalar, aşamalar). B
 - Vercel serverless: SQLite ve kalıcı dosya yazma yok. Supabase pooler (port 6543) için `CONN_MAX_AGE=0`, `DISABLE_SERVER_SIDE_CURSORS=True`.
 - Saat dilimi `Europe/Istanbul`, dil `tr`.
 
+## Güvenlik (her aşamanın parçası; ayrıntı docs/callender.md bölüm 12)
+- Nesneye pk ile erişirken HER ZAMAN kapsam filtresi: `get_object_or_404(Model.objects.for_user(request.user), pk=pk)`. Yetkisiz erişim 404.
+- Kullanıcı metni JS'te `textContent` ile basılır, `innerHTML` yasak; şablonda `|safe` yasak; `csrf_exempt` yasak; satır içi script/stil yok.
+- Form alanları tek tek yazılır (`__all__` yasak); owner/family sunucuda atanır.
+- Limit kontrolü `transaction.atomic` + `select_for_update` ile; giriş ve davet kodu denemeleri sınırlı.
+- Supabase Data API kapalı; anon/service_role anahtarı projede kullanılmaz.
+- Aşama sonunda `/guvenlik` (skill: callender-security-audit) çalıştır.
+
 ## Tasarım
 Tozsal mat pastel (kremsi mavi, pembe, sarı, çayır yeşili), yuvarlak köşe, hafif gölge, mobil öncelikli. Renkler CSS değişkeni olarak `static/css/theme.css` içinde; palet `docs/callender.md` bölüm 3. Renk kodunu bileşenlere gömme, değişken kullan.
 

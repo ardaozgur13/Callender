@@ -1,0 +1,22 @@
+{% load static %}<!doctype html>
+{# CSRF hatası: Django'nun teknik açıklaması (reason) bilerek gösterilmez. #}
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sayfanın süresi doldu · Callender</title>
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+</head>
+<body>
+  <main id="main" class="guest">
+    <a class="brand guest-brand" href="/"><span class="brand-mark" aria-hidden="true">🌼</span>Callender</a>
+    <section class="card empty error-page">
+      <span class="empty-icon" aria-hidden="true">⏳</span>
+      <h1>Sayfanın süresi doldu</h1>
+      <p>Güvenlik nedeniyle form gönderilemedi. Sayfayı yenileyip tekrar dener misin? Tarayıcın çerezleri engelliyorsa da bu olabilir.</p>
+      <p><a class="btn" href="/">Ana sayfaya dön</a></p>
+    </section>
+  </main>
+</body>
+</html>

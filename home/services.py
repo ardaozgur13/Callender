@@ -7,7 +7,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from core import limits
-from families.models import Family, FamilyMember
+from families.models import Family
 
 from .models import Chore, ChoreLog, HomeStatus
 
@@ -17,8 +17,8 @@ class HomeError(Exception):
 
 
 def accessible_chores(user):
-    family_ids = FamilyMember.objects.filter(user=user).values("family_id")
-    return Chore.objects.filter(family_id__in=family_ids)
+    """Kullanıcının üyesi olduğu ailelerin işleri (bkz. ChoreQuerySet.for_user)."""
+    return Chore.objects.for_user(user)
 
 
 def family_chores(family):

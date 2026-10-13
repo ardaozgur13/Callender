@@ -1,0 +1,22 @@
+{% load static %}<!doctype html>
+{# 500 sayfası bilerek bağımsızdır: veritabanı, oturum ya da bağlam işlemcisi gerektirmez, iç bilgi göstermez. #}
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bir şeyler ters gitti · Callender</title>
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+</head>
+<body>
+  <main id="main" class="guest">
+    <a class="brand guest-brand" href="/"><span class="brand-mark" aria-hidden="true">🌼</span>Callender</a>
+    <section class="card empty error-page">
+      <span class="empty-icon" aria-hidden="true">🌧️</span>
+      <h1>Bir şeyler ters gitti</h1>
+      <p>Sorun bizde, senin yaptığın bir şeyden değil. Birkaç dakika sonra tekrar dener misin?</p>
+      <p><a class="btn" href="/">Ana sayfaya dön</a></p>
+    </section>
+  </main>
+</body>
+</html>

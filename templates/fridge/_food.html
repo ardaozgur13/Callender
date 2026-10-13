@@ -6,12 +6,12 @@
       {{ food.get_storage_display }}
       {% if food.opened_on %} · {{ food.opened_on|date:"j M" }} açıldı{% else %} · Açılmadı{% endif %}
       {% if food.package_expiry %} · SKT {{ food.package_expiry|date:"j M Y" }}{% endif %}
-      {% if food.family_id %} · {{ food.owner.display_name }} ekledi{% endif %}
+      {% if food.family_id %} · {% if food.owner %}{{ food.owner.display_name }}{% else %}Silinmiş kullanıcı{% endif %} ekledi{% endif %}
     </p>
     {% if food.note and not compact %}<p class="food-note">{{ food.note }}</p>{% endif %}
   </div>
   <span class="badge badge--{{ food.status }}" title="{{ food.get_status_display }}">
-    {{ food.days_left_label }}{% if food.use_by %}<span class="visually-hidden">, son tüketim {{ food.use_by|date:"j F Y" }}</span>{% endif %}
+    {{ food.days_left_label }}{% if food.status == "late" %} · atmayı düşün{% endif %}{% if food.use_by %}<span class="visually-hidden">, son tüketim {{ food.use_by|date:"j F Y" }}</span>{% endif %}
   </span>
   <div class="food-actions">
     {% if not food.opened_on and not compact %}
@@ -25,12 +25,12 @@
       {% if compact %}<input type="hidden" name="next" value="home">{% endif %}
       <button class="btn btn--sm" type="submit" aria-label="Tüketildi: {{ food.name }}">✓ Tüketildi</button>
     </form>
-    {% if not compact %}
+    {% if not compact %}{% if not food.family_id or food.owner_id == user.pk or food.family_id in owned_family_ids %}
       <a class="btn btn--ghost btn--sm" href="{% url 'food_edit' food.pk %}" aria-label="Düzenle: {{ food.name }}">✏️</a>
       <form method="post" action="{% url 'food_delete' food.pk %}" onsubmit="return confirm('{{ food.name|escapejs }} silinsin mi?');">
         {% csrf_token %}
         <button class="btn btn--ghost btn--sm" type="submit" aria-label="Sil: {{ food.name }}">🗑️</button>
       </form>
-    {% endif %}
+    {% endif %}{% endif %}
   </div>
 </li>

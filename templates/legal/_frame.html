@@ -1,0 +1,16 @@
+<article class="card legal">
+  <h1>{{ page_title }}</h1>
+  <p class="notice" role="note">
+    ⚠️ <strong>Taslak metin.</strong> Bu sayfa hukuki bir metin değildir ve hukuki danışmanlık yerine geçmez.
+    Uygulama yayına alınmadan önce bir hukuk uzmanı tarafından gözden geçirilmeli; köşeli parantez içindeki
+    [alanlar] doldurulmalıdır.
+  </p>
+  <p class="muted small">Son güncelleme: {{ updated_on }}</p>
+  {% include body_template %}
+  <nav class="legal-links" aria-label="Diğer metinler">
+    <a href="{% url 'privacy_notice' %}">Aydınlatma metni</a> ·
+    <a href="{% url 'privacy_policy' %}">Gizlilik politikası</a> ·
+    <a href="{% url 'terms' %}">Kullanım koşulları</a>
+    {% if not user.is_authenticated %} · <a href="{% url 'register' %}">Kayıt ol</a>{% endif %}
+  </nav>
+</article>

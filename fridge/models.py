@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 
 from core import limits
@@ -37,6 +38,15 @@ class ShelfLifeRule(models.Model):
         return self.name_tr
 
 
+class FoodItemQuerySet(models.QuerySet):
+    def for_user(self, user):
+        """Kullanıcının erişebildiği ürünler: kişisel buzdolabı + üyesi olduğu ailelerin buzdolapları."""
+        from families.models import FamilyMember
+
+        family_ids = FamilyMember.objects.filter(user=user).values("family_id")
+        return self.filter(Q(owner=user, family__isnull=True) | Q(family_id__in=family_ids))
+
+
 class FoodItem(models.Model):
     class Status(models.TextChoices):
         FRESH = "fresh", "Taze"
@@ -49,8 +59,10 @@ class FoodItem(models.Model):
         "families.Family", on_delete=models.CASCADE, null=True, blank=True, related_name="food_items",
         verbose_name="aile",
     )
+    # Hesap silinince aile buzdolabındaki ürünler kalır; kişisel ürünler hesap silmede ayrıca silinir
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="food_items", verbose_name="ekleyen"
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="food_items",
+        verbose_name="ekleyen",
     )
     name = models.CharField("ürün adı", max_length=limits.FOOD_NAME_MAX)
     rule = models.ForeignKey(
@@ -66,10 +78,19 @@ class FoodItem(models.Model):
     consumed_at = models.DateTimeField("tüketilme zamanı", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    objects = FoodItemQuerySet.as_manager()
+
     class Meta:
         verbose_name = "gıda"
         verbose_name_plural = "gıdalar"
         ordering = [models.F("use_by").asc(nulls_last=True), "name"]
+        indexes = [models.Index(fields=["family", "is_consumed", "use_by"])]
+        constraints = [
+            # Sahipsiz ürün olamaz: ya bir aileye ya da bir kullanıcıya ait olmalı
+            models.CheckConstraint(
+                condition=Q(family__isnull=False) | Q(owner__isnull=False), name="food_has_family_or_owner"
+            ),
+        ]
 
     def __str__(self):
         return self.name

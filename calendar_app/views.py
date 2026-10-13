@@ -2,6 +2,7 @@ import calendar
 from datetime import date, timedelta
 
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -11,6 +12,7 @@ from django.views.decorators.http import require_POST
 
 from core import limits
 from families.context import get_active_family
+from families.permissions import can_manage
 
 from . import services
 from .forms import CalendarItemForm
@@ -23,6 +25,14 @@ MIN_YEAR, MAX_YEAR = 1900, 2200
 def _user_item(request, pk):
     """Kullanıcının erişebildiği öğe (kişisel ya da üyesi olduğu aileninki); değilse 404."""
     return get_object_or_404(services.accessible_items(request.user), pk=pk)
+
+
+def _manageable_item(request, pk):
+    """Düzenleme/silme için: görebildiği öğe + ekleyen ya da aile kurucusu olma şartı (değilse 403)."""
+    item = _user_item(request, pk)
+    if not can_manage(request.user, item):
+        raise PermissionDenied("Bu kaydı sadece ekleyen kişi ya da aile kurucusu değiştirebilir.")
+    return item
 
 
 def _day_url(day):
@@ -117,7 +127,7 @@ def item_create(request):
 
 
 def item_edit(request, pk):
-    item = _user_item(request, pk)
+    item = _manageable_item(request, pk)
     form = CalendarItemForm(request.POST or None, instance=item)
     if request.method == "POST" and form.is_valid():
         saved = _save_form(request, form, "Güncellendi.")
@@ -134,7 +144,7 @@ def item_edit(request, pk):
 
 @require_POST
 def item_delete(request, pk):
-    item = _user_item(request, pk)
+    item = _manageable_item(request, pk)
     item.delete()
     messages.info(request, f"“{item.title}” silindi.")
     return redirect(_next_or_day(request, item.date))

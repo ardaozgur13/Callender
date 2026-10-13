@@ -9,6 +9,11 @@
     <form method="post" novalidate>
       {% csrf_token %}
       {% include "includes/form.html" with form=form %}
+      <p class="muted small legal-links">
+        Okumak için: <a href="{% url 'privacy_notice' %}" target="_blank" rel="noopener">Aydınlatma metni</a> ·
+        <a href="{% url 'privacy_policy' %}" target="_blank" rel="noopener">Gizlilik politikası</a> ·
+        <a href="{% url 'terms' %}" target="_blank" rel="noopener">Kullanım koşulları</a>
+      </p>
       <button class="btn btn--block" type="submit">Kayıt ol</button>
     </form>
     <p class="auth-switch">Zaten hesabın var mı? <a href="{% url 'login' %}">Giriş yap</a></p>

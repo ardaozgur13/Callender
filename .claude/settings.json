@@ -6,6 +6,7 @@
       "Bash(python manage.py test:*)",
       "Bash(python manage.py makemigrations:*)",
       "Bash(python manage.py showmigrations:*)",
+      "Bash(bash .claude/skills/callender-security-audit/scripts/scan.sh:*)",
       "Bash(pip install:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",

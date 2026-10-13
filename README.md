@@ -23,11 +23,11 @@ Geliştirme ve canlı için ayrı iki Supabase projesi önerilir.
 ```bash
 python manage.py check                       # yapılandırma kontrolü (veritabanına bağlanmaz)
 python manage.py check --database default    # Supabase bağlantısını da dener
-python manage.py test --keepdb
+python manage.py test
 python manage.py runserver                   # http://127.0.0.1:8000
 ```
 
-Testler Supabase'te geçici bir `test_callender` veritabanı kullanır. Supabase'in bağlantı havuzu test bitince o veritabanına açık bir bağlantıyı bir süre daha tuttuğu için Django onu silemez ve hata verir. Bu yüzden testleri `--keepdb` ile çalıştır: test veritabanı silinmez, bir sonraki seferde yeniden kullanılır. Asıl `postgres` veritabanına dokunulmaz.
+Testler Supabase'te geçici bir `test_callender` veritabanı kullanır ve sonunda siler. Supabase pooler bu veritabanına açık bir bağlantı tuttuğu için silme `DROP DATABASE … WITH (FORCE)` ile yapılır (`core/test_runner.py`). Asıl `postgres` veritabanına dokunulmaz. Uzak veritabanı yüzünden testler birkaç dakika sürer; hızlandırmak için `--keepdb` kullanılabilir.
 
 ## Migration
 

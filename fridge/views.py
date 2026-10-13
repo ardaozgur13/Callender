@@ -1,9 +1,11 @@
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from core import limits
 from families.context import get_active_family
+from families.permissions import can_manage
 
 from . import services
 from .forms import FoodItemForm
@@ -18,6 +20,15 @@ SAFETY_NOTICE = (
 def _user_item(request, pk):
     """Kullanıcının erişebildiği ürün (kişisel ya da üyesi olduğu ailenin); değilse 404."""
     return get_object_or_404(services.accessible_items(request.user), pk=pk)
+
+
+def _manageable_item(request, pk):
+    """Düzenleme/silme için: ekleyen ya da aile kurucusu olma şartı (değilse 403).
+    Tüketildi / Bugün açtım ortak buzdolabında her üyeye açıktır."""
+    item = _user_item(request, pk)
+    if not can_manage(request.user, item):
+        raise PermissionDenied("Bu ürünü sadece ekleyen kişi ya da aile kurucusu değiştirebilir.")
+    return item
 
 
 def _rules_for_js():
@@ -67,7 +78,7 @@ def food_create(request):
 
 
 def food_edit(request, pk):
-    item = _user_item(request, pk)
+    item = _manageable_item(request, pk)
     form = FoodItemForm(request.POST or None, instance=item)
     if request.method == "POST" and form.is_valid():
         form.save()
@@ -95,7 +106,7 @@ def food_open_today(request, pk):
 
 @require_POST
 def food_delete(request, pk):
-    item = _user_item(request, pk)
+    item = _manageable_item(request, pk)
     item.delete()
     messages.info(request, f"{item.name} silindi.")
     return redirect("fridge")

@@ -15,7 +15,7 @@
     <span class="chore-title">{{ chore.title }}</span>
     <span class="chore-meta">
       {% if chore.assigned_to %}{{ chore.assigned_to.display_name }}{% else %}Herkes{% endif %}
-      {% if log %} · {% if log.done_by %}{{ log.done_by.display_name }}{% else %}biri{% endif %} yaptı{% endif %}
+      {% if log %} · {% if log.done_by %}{{ log.done_by.display_name }}{% else %}Silinmiş kullanıcı{% endif %} yaptı{% endif %}
     </span>
   </div>
 </li>

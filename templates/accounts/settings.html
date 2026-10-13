@@ -36,9 +36,25 @@
     </form>
   </section>
 
+  <section class="card" aria-labelledby="data-title">
+    <h2 id="data-title">Verilerim</h2>
+    <p class="muted">Hesabın, takvim kayıtların, buzdolabı ürünlerin ve ev işi kayıtların tek bir JSON dosyası olarak iner.</p>
+    <a class="btn btn--ghost" href="{% url 'export_data' %}" download>⬇️ Verilerimi indir (JSON)</a>
+    <p class="muted small legal-links">
+      <a href="{% url 'privacy_notice' %}">Aydınlatma metni</a> ·
+      <a href="{% url 'privacy_policy' %}">Gizlilik politikası</a> ·
+      <a href="{% url 'terms' %}">Kullanım koşulları</a>
+    </p>
+  </section>
+
   <section class="card card--danger" aria-labelledby="delete-title">
     <h2 id="delete-title">Hesabı sil</h2>
-    <p class="muted">Hesabın ve sana ait tüm kayıtlar kalıcı olarak silinir. Bu işlem geri alınamaz.</p>
+    <p class="muted">Bu işlem geri alınamaz. Silmeden önce verilerini indirmek isteyebilirsin.</p>
+    <ul class="muted small delete-rules">
+      <li>Hesabın, kişisel takvim kayıtların ve kişisel buzdolabın kalıcı olarak silinir.</li>
+      <li>Ailelere eklediğin kayıtlar ailede kalır, ekleyen “Silinmiş kullanıcı” olarak görünür.</li>
+      <li>Bir ailenin kurucusuysan kuruculuk en eski üyeye geçer; ailede başka kimse yoksa aile silinir.</li>
+    </ul>
     <form method="post" action="{% url 'delete_account' %}" novalidate
           onsubmit="return confirm('Hesabını kalıcı olarak silmek istediğine emin misin?');">
       {% csrf_token %}

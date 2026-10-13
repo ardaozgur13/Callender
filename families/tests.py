@@ -238,16 +238,48 @@ class ContextAndSharedCalendarTests(TestCase):
         self.assertEqual(self.client.get(reverse("item_edit", args=[item.pk])).status_code, 404)
         self.assertEqual(self.client.post(reverse("item_delete", args=[item.pk])).status_code, 404)
 
-    def test_member_can_edit_family_item_owner_unchanged(self):
+    def edit_post(self, item, title):
+        return self.client.post(reverse("item_edit", args=[item.pk]), {
+            "kind": "event", "title": title, "date": self.day.isoformat(), "all_day": "on", "repeat": "none",
+        })
+
+    def test_member_cannot_edit_or_delete_others_family_item(self):
+        # Kural (bölüm 6): üye kendi eklediğini düzenler/siler, kurucu her şeyi yönetir
         item = CalendarItem.objects.create(owner=self.ayse, family=self.family, title="Aile yemeği", date=self.day)
         self.client.force_login(self.can)
-        self.client.post(reverse("item_edit", args=[item.pk]), {
-            "kind": "event", "title": "Aile yemeği 19:00", "date": self.day.isoformat(), "all_day": "on",
-            "repeat": "none",
-        })
+        self.assertEqual(self.edit_post(item, "Ele geçirildi").status_code, 403)
+        self.assertEqual(self.client.post(reverse("item_delete", args=[item.pk])).status_code, 403)
         item.refresh_from_db()
-        self.assertEqual(item.title, "Aile yemeği 19:00")
-        self.assertEqual(item.owner, self.ayse)
+        self.assertEqual(item.title, "Aile yemeği")
+        # Ama görebilir ve tamamlandı işaretleyebilir (görev ise)
+        self.switch(self.family.pk)
+        self.assertContains(self.client.get(self.day_url), "Aile yemeği")
+
+    def test_member_edits_own_family_item(self):
+        item = CalendarItem.objects.create(owner=self.can, family=self.family, title="Can'in planı", date=self.day)
+        self.client.force_login(self.can)
+        self.assertEqual(self.edit_post(item, "Can'in yeni planı").status_code, 302)
+        item.refresh_from_db()
+        self.assertEqual((item.title, item.owner), ("Can'in yeni planı", self.can))
+
+    def test_family_owner_manages_everything_owner_field_unchanged(self):
+        item = CalendarItem.objects.create(owner=self.can, family=self.family, title="Can'in planı", date=self.day)
+        self.client.force_login(self.ayse)  # Ayşe kurucu
+        self.assertEqual(self.edit_post(item, "Kurucu düzeltti").status_code, 302)
+        item.refresh_from_db()
+        self.assertEqual((item.title, item.owner), ("Kurucu düzeltti", self.can))
+        self.client.post(reverse("item_delete", args=[item.pk]))
+        self.assertFalse(CalendarItem.objects.filter(pk=item.pk).exists())
+
+    def test_edit_buttons_hidden_for_non_manager(self):
+        CalendarItem.objects.create(owner=self.ayse, family=self.family, title="Aile yemeği", date=self.day)
+        mine = CalendarItem.objects.create(owner=self.can, family=self.family, title="Benimki", date=self.day)
+        self.client.force_login(self.can)
+        self.switch(self.family.pk)
+        response = self.client.get(self.day_url)
+        self.assertContains(response, reverse("item_edit", args=[mine.pk]))
+        self.assertContains(response, "Düzenle: Benimki")
+        self.assertNotContains(response, "Düzenle: Aile yemeği")
 
     def test_leaving_removes_access_and_context(self):
         item = CalendarItem.objects.create(owner=self.ayse, family=self.family, title="Aile yemeği", date=self.day)

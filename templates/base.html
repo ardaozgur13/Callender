@@ -63,6 +63,7 @@
       {% include "includes/context_switcher.html" %}
       {% include "includes/messages.html" %}
       {% block content %}{% endblock %}
+      {% include "includes/footer.html" %}
     </main>
   </div>
   {% else %}
@@ -71,6 +72,7 @@
     <a class="brand guest-brand" href="{% url 'login' %}"><span class="brand-mark" aria-hidden="true">🌼</span>Callender</a>
     {% include "includes/messages.html" %}
     {% block guest_content %}{% endblock %}
+    {% include "includes/footer.html" %}
   </main>
   {% endif %}
 

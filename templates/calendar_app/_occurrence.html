@@ -19,11 +19,12 @@
       {{ item.get_kind_display }}
       · {% if item.all_day %}Tüm gün{% else %}{{ item.start_time|time:"H:i" }}{% if item.end_time %}–{{ item.end_time|time:"H:i" }}{% endif %}{% endif %}
       {% if item.repeat == "yearly" %} · 🔁 Her yıl{% endif %}
-      {% if item.family_id %} · {{ item.owner.display_name }} ekledi{% endif %}
+      {% if item.family_id %} · {% if item.owner %}{{ item.owner.display_name }}{% else %}Silinmiş kullanıcı{% endif %} ekledi{% endif %}
     </p>
     {% if item.description %}<p class="item-desc">{{ item.description|linebreaksbr }}</p>{% endif %}
   </div>
 
+  {% if not item.family_id or item.owner_id == user.pk or item.family_id in owned_family_ids %}
   <div class="item-actions">
     <a class="btn btn--ghost btn--sm" href="{% url 'item_edit' item.pk %}" aria-label="Düzenle: {{ item.title }}">✏️</a>
     <form method="post" action="{% url 'item_delete' item.pk %}"
@@ -33,5 +34,6 @@
       <button type="submit" class="btn btn--ghost btn--sm" aria-label="Sil: {{ item.title }}">🗑️</button>
     </form>
   </div>
+  {% endif %}
 </li>
 {% endwith %}

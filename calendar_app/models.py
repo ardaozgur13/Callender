@@ -4,8 +4,18 @@ from datetime import date
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 
 from core import limits
+
+
+class CalendarItemQuerySet(models.QuerySet):
+    def for_user(self, user):
+        """Kullanıcının erişebildiği öğeler: kendi kişisel öğeleri + üyesi olduğu ailelerin öğeleri."""
+        from families.models import FamilyMember
+
+        family_ids = FamilyMember.objects.filter(user=user).values("family_id")
+        return self.filter(Q(owner=user, family__isnull=True) | Q(family_id__in=family_ids))
 
 
 class CalendarItem(models.Model):
@@ -40,8 +50,10 @@ class CalendarItem(models.Model):
         Kind.REMINDER: "🔔",
     }
 
+    # Hesap silinince aile öğeleri kalır ("Silinmiş kullanıcı"); kişisel öğeler hesap silmede ayrıca silinir
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="calendar_items", verbose_name="oluşturan"
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="calendar_items",
+        verbose_name="oluşturan",
     )
     # Boş = kişisel öğe; dolu = ailenin tüm üyelerinin gördüğü aile öğesi
     family = models.ForeignKey(
@@ -60,11 +72,13 @@ class CalendarItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    objects = CalendarItemQuerySet.as_manager()
+
     class Meta:
         verbose_name = "takvim öğesi"
         verbose_name_plural = "takvim öğeleri"
         ordering = ["date", "-all_day", "start_time", "created_at"]
-        indexes = [models.Index(fields=["owner", "date"])]
+        indexes = [models.Index(fields=["owner", "date"]), models.Index(fields=["family", "date"])]
 
     def __str__(self):
         return f"{self.title} ({self.date})"

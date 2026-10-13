@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.validators import MinLengthValidator
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils import timezone
 
 from core import limits
@@ -42,6 +43,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField("aktif", default=True)
     is_staff = models.BooleanField("yönetici paneli erişimi", default=False)
     date_joined = models.DateTimeField("katılma tarihi", default=timezone.now)
+    # KVKK: aydınlatma metni ve kullanım koşullarının onaylandığı an (kayıtta dolar)
+    accepted_terms_at = models.DateTimeField("koşulları onay zamanı", null=True, blank=True)
 
     objects = UserManager()
 
@@ -52,6 +55,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = "kullanıcı"
         verbose_name_plural = "kullanıcılar"
+        constraints = [
+            # Veritabanı düzeyinde de büyük/küçük harf duyarsız benzersiz e-posta
+            models.UniqueConstraint(Lower("email"), name="unique_user_email_ci"),
+        ]
 
     def __str__(self):
         return f"{self.display_name} <{self.email}>"

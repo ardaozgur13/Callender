@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import AuthenticationForm
+from django.utils import timezone
 
 from core import limits
 
@@ -20,6 +21,11 @@ class RegisterForm(forms.ModelForm):
         label="Parola (tekrar)",
         strip=False,
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+    )
+    accept_terms = forms.BooleanField(
+        label="Aydınlatma metnini okudum; gizlilik politikası ve kullanım koşullarını kabul ediyorum.",
+        required=True,
+        error_messages={"required": "Devam etmek için aydınlatma metnini okuduğunu onaylaman gerekiyor."},
     )
 
     class Meta:
@@ -61,6 +67,7 @@ class RegisterForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
+        user.accepted_terms_at = timezone.now()
         if commit:
             user.save()
         return user

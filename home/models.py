@@ -9,6 +9,14 @@ WEEKDAY_CHOICES = [
 ]
 
 
+class ChoreQuerySet(models.QuerySet):
+    def for_user(self, user):
+        """Kullanıcının üyesi olduğu ailelerin işleri."""
+        from families.models import FamilyMember
+
+        return self.filter(family_id__in=FamilyMember.objects.filter(user=user).values("family_id"))
+
+
 class Chore(models.Model):
     """Ailenin ev işi. Her hafta tekrar eder: belirli bir günde ya da (weekday boşsa) her gün."""
 
@@ -23,6 +31,8 @@ class Chore(models.Model):
     weekday = models.PositiveSmallIntegerField("hangi gün", choices=WEEKDAY_CHOICES, null=True, blank=True)
     is_active = models.BooleanField("aktif", default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = ChoreQuerySet.as_manager()
 
     class Meta:
         verbose_name = "ev işi"
@@ -106,6 +116,10 @@ class HomeStatus(models.Model):
 
     def __str__(self):
         return f"{self.get_kind_display()}: {self.status_label}"
+
+    @property
+    def initial_status(self):
+        return self.INITIAL[self.kind]
 
     @property
     def steps(self):

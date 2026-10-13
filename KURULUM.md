@@ -15,7 +15,8 @@ callender/
 ├── .gitignore
 ├── .claude/
 │   ├── settings.json
-│   └── commands/ (asama.md, kontrol.md, kaydet.md)
+│   ├── commands/ (asama.md, kontrol.md, guvenlik.md, kaydet.md)
+│   └── skills/callender-security-audit/ (SKILL.md, scripts/scan.sh, scripts/supabase_check.sql)
 └── docs/
     ├── callender.md
     └── ILERLEME.md
@@ -25,12 +26,12 @@ callender/
 ```bash
 claude
 ```
-İçeride `/memory` ile `CLAUDE.md`'nin yüklendiğini, `/help` ile `/asama`, `/kontrol`, `/kaydet` komutlarının göründüğünü doğrula.
+İçeride `/memory` ile `CLAUDE.md`'nin yüklendiğini, `/help` ile `/asama`, `/kontrol`, `/guvenlik`, `/kaydet` komutlarının göründüğünü doğrula.
 
 ## 3. Çalışma döngüsü
 1. `/asama 1` yaz. İstersen önce Shift+Tab ile plan moduna geçip planı okuyabilirsin.
 2. Bitince uygulamayı çalıştır, elle dene.
-3. `/kontrol` ile gözden geçirt, bulguları düzelttir.
+3. `/kontrol` ile gözden geçirt, `/guvenlik` ile güvenlik denetimi yaptır, bulguları düzelttir.
 4. `/kaydet` ile commit.
 5. `docs/ILERLEME.md`'de aşamayı ✅ yap, `/clear` ile temiz oturum aç, sonraki aşamaya geç.
 
@@ -41,3 +42,5 @@ Her aşamayı ayrı oturumda yapmak bağlamı temiz tutar; belge dosyaları bilg
 - Geliştirme ve canlı için **ayrı iki Supabase projesi** kullanmanı öneririm. Aksi halde yerelde denediğin her şey canlı veriyi etkiler.
 - `migrate` komutu Claude Code'da her seferinde senden onay ister, bu bilerek böyle.
 - `git push`'u da sen yaparsın; Vercel'e GitHub bağlayınca push canlıya gider.
+- **Supabase Data API'yi kapat** (Project Settings > Data API > Enable Data API: kapalı). Uygulama Supabase'e sadece doğrudan Postgres bağlantısıyla gidiyor; API açık kalırsa Django tabloları anon anahtarıyla erişilebilir olabilir. Aşama 1'de Claude Code bu adımı sana yaptıracak, sonra `supabase_check.sql` ile kontrol edeceksin.
+- Güvenlik denetimini her aşamadan sonra tekrarla. `scan.sh` kaba bir kalıp taramasıdır; temiz çıkması güvenli demek değildir.

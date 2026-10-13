@@ -95,6 +95,8 @@ DATABASES["default"]["CONN_MAX_AGE"] = 0
 DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True
 # `manage.py test` aynı Supabase sunucusunda geçici bir test veritabanı açar ve sonunda siler
 DATABASES["default"]["TEST"] = {"NAME": "test_callender"}
+# Pooler test veritabanını açık tuttuğu için silme WITH (FORCE) ile yapılır (bkz. core/test_runner.py)
+TEST_RUNNER = "core.test_runner.PoolerSafeTestRunner"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

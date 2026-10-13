@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+
+{% block title %}Yetkin yok{% endblock %}
+
+{% block content %}{% include "includes/error_body.html" with icon="🔒" heading="Bunu yapma yetkin yok" text="Aile kayıtlarını sadece ekleyen kişi ya da aile kurucusu değiştirebilir." %}{% endblock %}
+{% block guest_content %}{% include "includes/error_body.html" with icon="🔒" heading="Bunu yapma yetkin yok" text="Bu sayfaya erişimin yok." %}{% endblock %}

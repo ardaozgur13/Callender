@@ -2,17 +2,19 @@
 
 Her aşama bitince Claude Code bu dosyayı günceller. Yeni oturumda önce bunu oku.
 
-| Aşama | Konu | Durum |
-|---|---|---|
-| 1 | İskelet ve tasarım sistemi | ✅ |
-| 2 | Kimlik doğrulama | ✅ |
-| 3 | Kişisel takvim | ✅ |
-| 4 | Aile grupları | ✅ |
-| 5 | Buzdolabı ve son kullanma | ✅ |
-| 6 | Ev işleri ve ev durumu | 🟨 sürüyor |
-| 7 | Cilalama ve yayın | ⬜ |
+| Aşama | Konu | Durum | /guvenlik |
+|---|---|---|---|
+| 1 | İskelet, tasarım sistemi, güvenlik temeli, Supabase Data API kapatma | ✅ (belge v1'e göre) | ⬜ |
+| 2 | Kimlik doğrulama (giriş sınırı, KVKK onayı) | ✅ (belge v1'e göre) | ⬜ |
+| 3 | Kişisel takvim (for_user, limit yarış durumu) | ✅ (belge v1'e göre) | ⬜ |
+| 4 | Aile grupları (davet kodu sınırı, silme kuralları) | ✅ (belge v1'e göre) | ⬜ |
+| 5 | Buzdolabı ve son kullanma | ✅ (belge v1'e göre) | ⬜ |
+| 6 | Ev işleri ve ev durumu | ✅ (belge v1'e göre) | ⬜ |
+| 7 | Cilalama, KVKK sayfaları, hesap silme/dışa aktarma, tam denetim, yayın | 🟨 Parça A sürüyor | ⬜ |
 
 Durumlar: ⬜ başlamadı · 🟨 sürüyor · ✅ bitti (kullanıcı onayladı)
+
+> **Belge sürümü notu (2026-10-13):** Aşama 1–6, güvenlik bölümleri (12–13) olmayan ilk belgeye (v1) göre yapıldı. Aşama 7 başında v2 paketi (`docs/callender.md` bölüm 12–13, `/guvenlik`, `callender-security-audit` skill) projeye eklendi. v2'ye göre 1–6'daki eksikler aşağıda "Aşama 7 / v2 eksik listesi"nde; bunlar Aşama 7 Parça A ve B'de kapatılıyor. `/guvenlik` sütunu ilk kez Parça B'de doldurulacak.
 
 ## Notlar / kararlar
 
@@ -99,3 +101,33 @@ Durumlar: ⬜ başlamadı · 🟨 sürüyor · ✅ bitti (kullanıcı onayladı)
 - **Güncelleme görünürlüğü:** Diğer üyenin değişikliği sayfa yenilenince görünür ("↻ Yenile" butonu). Canlı (otomatik) yenileme yok.
 - **Bugün sayfası:** Aile seçiliyse ev durumu kartları ve bugünün işleri; buradan da "Yaptım" ve "Sonraki adım" denebilir.
 - **Migrate uygulandı** (2026-10-13), RLS açık. 131 test geçti (~6 dk).
+
+### Aşama 7 / v2 eksik listesi (Aşama 1–6, belge v2'ye göre)
+| # | Eksik | Nerede kapatılıyor |
+|---|---|---|
+| G1 | Supabase Data API kapatılmadı; RLS açık ama `anon`/`authenticated` yetkileri geri alınmadı | B (kullanıcı adımı + `supabase_check.sql`) |
+| G2 | Giriş denemesi sınırı (`AuthAttempt`) yok | B |
+| G3 | Davet kodu deneme sınırı, günde 3 aile sınırı yok; hata mesajları tek tip değil | B |
+| G4 | Güvenlik başlıkları (CSP, Permissions-Policy) yok; satır içi JS var | B |
+| G5 | Django admin `/admin/` adresinde açık | B |
+| G6 | `SECURE_SSL_REDIRECT`, HSTS, `DATA_UPLOAD_MAX_MEMORY_SIZE` eksik | B |
+| G7 | `requirements.txt` sürümleri `==` ile sabit değil | B |
+| V1 | `CalendarItem.owner` / `FoodItem.owner` CASCADE idi (SET_NULL olmalı) | **A, kapatıldı** |
+| V2 | Aile kaydını her üye düzenleyip silebiliyordu (üye kendi eklediğini, kurucu her şeyi olmalı) | **A, kapatıldı** |
+| V3 | `Lower(email)` benzersizlik kısıtı, `FoodItem` CheckConstraint, `(family,date)` ve `(family,is_consumed,use_by)` indeksleri yoktu | **A, kapatıldı** |
+| V4 | Doğum yılı bilinmiyorsa yaş gizlenemiyor (tarih alanı yıl istiyor) | B |
+
+**Paket kararı:** v2 izinli listesinde `python-dotenv` yok (`django-environ` var). `python-dotenv` sadece yerelde `.env` okuyor, Vercel'de kullanılmıyor, bilinen açığı yok; kullanıcı onayıyla (2026-10-13) **kalıyor**, belgeye istisna olarak işlendi.
+
+### Aşama 7, Parça A (cilalama ve gizlilik)
+- **Belge paketi v2** projeye kopyalandı (CLAUDE.md, KURULUM.md, docs/callender.md, `.claude/commands/guvenlik.md`, `asama.md`, `settings.json`, `.claude/skills/callender-security-audit/`).
+- **Yetki (V2):** `families/permissions.py` → `can_manage(user, obj)`. Kişisel kayıt: sadece sahibi. Aile kaydı/gıdası: ekleyen ya da aile kurucusu düzenler/siler; yetkisiz deneme **403** (görebildiği bir nesne olduğu için 404 değil). Görmek, "tamamlandı", "tüketildi", "bugün açtım" her üyeye açık (ortak kullanım). Ev işleri ve durum kartlarında oluşturan alanı olmadığı için tüm üyeler eşit (değişmedi). Butonlar yetkisi olmayana gösterilmiyor (`owned_family_ids` bağlam değişkeni).
+- **`for_user()` (bölüm 12.2):** `CalendarItem`, `FoodItem` ve `Chore` için QuerySet yöntemi. Servislerdeki `accessible_*` fonksiyonları bunu kullanıyor.
+- **Hesap silme (V1, bölüm 7):** `accounts/services.delete_account`, tek `transaction.atomic` içinde: ailelerden ayrıl (tek kurucuysa en eski üyeye devir, son üyeyse aile silinir) → kişisel takvim ve gıdaları sil → kullanıcıyı sil. Aile kayıtları/gıdaları kalır (`owner` SET_NULL), arayüzde "Silinmiş kullanıcı". Ev işi ataması, "yaptım" ve durum güncelleyen zaten SET_NULL'dı. Sahipsiz aile kaydında günlük limit kontrolü atlanır (sayılacak kota yok); sadece kurucu düzenleyebilir.
+- **Veri dışa aktarma:** Ayarlar → "Verilerimi indir (JSON)" (`/ayarlar/verilerim.json`). İçerik: hesap, aile üyelikleri, kendi oluşturduğun takvim kayıtları ve gıdalar, sana atanan işler, yaptığın işler. Diğer üyelerin e-postası, davet kodu ve başkalarının kayıtları dahil değil. `Cache-Control: no-store`.
+- **KVKK:** `/aydinlatma-metni/`, `/gizlilik/`, `/kullanim-kosullari/` herkese açık; hepsinde "Taslak metin, hukuki metin değildir" uyarısı ve doldurulacak `[alanlar]` var (veri sorumlusu, iletişim, yurt dışı aktarım dayanağı, yaş sınırı, yedek saklama süresi vb.). Kayıtta zorunlu onay kutusu; `User.accepted_terms_at` kaydediliyor. **Mevcut kullanıcılarda bu alan boş**; onlardan yeniden onay istemek yapılmadı. Her sayfanın altında metin bağlantıları var.
+- **Hata sayfaları:** `404.html`, `403.html` (base üzerinden, sade), `500.html` ve `403_csrf.html` bağımsız (veritabanı/oturum gerektirmez, Django'nun teknik açıklamasını göstermez).
+- **Erişilebilirlik ve mobil:** `--text-soft` #7C7C8A'dan #6B6B78'e koyulaştırıldı (kremsi zeminde ~3,9:1 → ~5:1, WCAG AA); renkli rozet ve butonlarda `--text-strong`; pembe bağlam seçicide etiket rengi düzeltildi. Süresi geçen gıdada "· atmayı düşün" (bölüm 13.3). Mevcut odak halkaları, aria etiketleri, `aria-current`, 36–44 px dokunma alanları kod üzerinden gözden geçirildi. Giriş gerektiren sayfaların görsel kontrolü kullanıcıda.
+- **Kısıtlar/indeksler (V3):** `UniqueConstraint(Lower("email"))`, `FoodItem` `CheckConstraint(family veya owner dolu)`, `CalendarItem(family, date)` ve `FoodItem(family, is_consumed, use_by)` indeksleri.
+- **Testler:** `core/test_runner.PoolerSafeTestRunner` test veritabanını `DROP DATABASE … WITH (FORCE)` ile siler; düz `python manage.py test` artık hatasız biter. Yeni testler: `accounts/tests_privacy.py` (onay, e-posta kısıtı, silme sonrası veri durumu, dışa aktarma, hata sayfaları), aile ve buzdolabı yetki testleri.
+- **Migration'lar (uygulanmadı, kullanıcı çalıştıracak):** `accounts 0002`, `calendar_app 0003`, `fridge 0003`.

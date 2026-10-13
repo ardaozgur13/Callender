@@ -242,3 +242,40 @@ class FridgeAuthorizationTests(TestCase):
         FoodItem.objects.filter(pk=self.shared.pk).update(use_by=today)
         self.assertEqual(list(services.expiring_items(self.can, self.family)), [self.shared])
         self.assertEqual(list(services.expiring_items(self.zeynep, self.family)), [])
+
+
+class FridgeManagePermissionTests(TestCase):
+    """Bölüm 6: ortak buzdolabında herkes tüketildi/açtım diyebilir; düzenle/sil ekleyende ya da kurucuda."""
+
+    def setUp(self):
+        self.ayse = make_user("Ayse")  # kurucu
+        self.can = make_user("Can")
+        self.family = family_services.create_family(self.ayse, "Yılmazlar")
+        family_services.join_family(self.can, self.family.invite_code)
+        self.ayse_food = make_food(self.ayse, name="Ayşe'nin peyniri", family=self.family)
+        self.can_food = make_food(self.can, name="Can'in kefiri", family=self.family)
+
+    def test_member_cannot_edit_or_delete_others_food(self):
+        self.client.force_login(self.can)
+        self.assertEqual(self.client.get(reverse("food_edit", args=[self.ayse_food.pk])).status_code, 403)
+        self.assertEqual(self.client.post(reverse("food_delete", args=[self.ayse_food.pk])).status_code, 403)
+        self.assertTrue(FoodItem.objects.filter(pk=self.ayse_food.pk).exists())
+
+    def test_member_can_consume_others_food(self):
+        self.client.force_login(self.can)
+        self.client.post(reverse("food_consume", args=[self.ayse_food.pk]))
+        self.ayse_food.refresh_from_db()
+        self.assertTrue(self.ayse_food.is_consumed)
+
+    def test_member_manages_own_and_owner_manages_all(self):
+        self.client.force_login(self.can)
+        self.assertEqual(self.client.get(reverse("food_edit", args=[self.can_food.pk])).status_code, 200)
+        self.client.force_login(self.ayse)
+        self.client.post(reverse("food_delete", args=[self.can_food.pk]))
+        self.assertFalse(FoodItem.objects.filter(pk=self.can_food.pk).exists())
+
+    def test_expired_food_suggests_discarding(self):
+        make_food(self.ayse, name="Eski yoğurt", package_expiry=timezone.localdate() - timedelta(days=2))
+        self.client.force_login(self.ayse)
+        self.client.post(reverse("switch_context"), {"family": "", "next": "/"})
+        self.assertContains(self.client.get(reverse("fridge")), "atmayı düşün")

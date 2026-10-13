@@ -6,7 +6,6 @@ from collections import defaultdict
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import Q
 
 from core import limits
 from families.models import FamilyMember
@@ -22,9 +21,8 @@ class DailyLimitError(Exception):
 
 
 def accessible_items(user):
-    """Kullanıcının erişebildiği tüm öğeler: kendi kişisel öğeleri + üyesi olduğu ailelerin öğeleri."""
-    family_ids = FamilyMember.objects.filter(user=user).values("family_id")
-    return CalendarItem.objects.filter(Q(owner=user, family__isnull=True) | Q(family_id__in=family_ids))
+    """Kullanıcının erişebildiği tüm öğeler (bkz. CalendarItemQuerySet.for_user)."""
+    return CalendarItem.objects.for_user(user)
 
 
 def scope_items(user, family=None):
@@ -55,9 +53,11 @@ def save_item(user, item):
     if item.pk is None:
         item.owner = user
     with transaction.atomic():
-        get_user_model().objects.select_for_update().only("pk").get(pk=item.owner_id)
-        if items_on_date_count(item.owner, item.date, exclude_pk=item.pk) >= limits.MAX_ITEMS_PER_DAY:
-            raise DailyLimitError()
+        # Ekleyen hesabını sildiyse (owner boş) sayılacak bir kota kalmaz
+        if item.owner_id is not None:
+            get_user_model().objects.select_for_update().only("pk").get(pk=item.owner_id)
+            if items_on_date_count(item.owner, item.date, exclude_pk=item.pk) >= limits.MAX_ITEMS_PER_DAY:
+                raise DailyLimitError()
         item.save()
     return item
 

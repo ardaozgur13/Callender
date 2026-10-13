@@ -34,6 +34,7 @@ class RegisterTests(TestCase):
             "email": "Ayse@Example.com",
             "password1": PASSWORD,
             "password2": PASSWORD,
+            "accept_terms": "on",
         }
         data.update(overrides)
         return self.client.post(self.url, data)

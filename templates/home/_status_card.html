@@ -13,8 +13,10 @@
       Son güncelleme: <strong>{{ card.updated_by.display_name }}</strong>,
       {% if card.updated_at|date:"Y-m-d" == today|date:"Y-m-d" %}bugün {{ card.updated_at|time:"H:i" }}{% else %}{{ card.updated_at|date:"j M H:i" }}{% endif %}
       → “{{ card.status_label }}”
-    {% else %}
+    {% elif card.status == card.initial_status %}
       Henüz kimse güncellemedi
+    {% else %}
+      Son güncelleme: Silinmiş kullanıcı
     {% endif %}
   </p>
 

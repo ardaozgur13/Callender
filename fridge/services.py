@@ -5,7 +5,6 @@ from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import Q
 from django.utils import timezone
 
 from core import limits
@@ -21,9 +20,8 @@ class FridgeLimitError(Exception):
 
 
 def accessible_items(user):
-    """Kullanıcının erişebildiği ürünler: kişisel buzdolabı + üyesi olduğu ailelerin buzdolapları."""
-    family_ids = FamilyMember.objects.filter(user=user).values("family_id")
-    return FoodItem.objects.filter(Q(owner=user, family__isnull=True) | Q(family_id__in=family_ids))
+    """Kullanıcının erişebildiği ürünler (bkz. FoodItemQuerySet.for_user)."""
+    return FoodItem.objects.for_user(user)
 
 
 def scope_items(user, family=None):
