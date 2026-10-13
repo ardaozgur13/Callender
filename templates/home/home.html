@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Ev{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <h1>{{ active_family.name }} evi</h1>
+    <p>Kim ne yaptı, ne yapılacak; hepsi burada.</p>
+  </header>
+
+  <section aria-labelledby="status-title" class="today">
+    <div class="section-head">
+      <h2 id="status-title">Ev durumu</h2>
+      <a class="btn btn--ghost btn--sm" href="{{ request.get_full_path }}">↻ Yenile</a>
+    </div>
+    <div class="grid grid--2">
+      {% for card in statuses %}{% include "home/_status_card.html" %}{% endfor %}
+    </div>
+  </section>
+
+  <section aria-labelledby="chores-title">
+    <div class="section-head">
+      <h2 id="chores-title">Ev işleri</h2>
+      <a class="btn btn--sm" href="{% url 'chore_create' %}">+ İş ekle</a>
+    </div>
+
+    <div class="month-actions">
+      <a class="btn btn--ghost btn--sm" href="?hafta={{ prev_week|date:'Y-m-d' }}" aria-label="Önceki hafta">‹ Önceki</a>
+      <strong class="week-label">{{ week_start|date:"j M" }} – {{ week_end|date:"j M Y" }}</strong>
+      <a class="btn btn--ghost btn--sm" href="?hafta={{ next_week|date:'Y-m-d' }}" aria-label="Sonraki hafta">Sonraki ›</a>
+    </div>
+    {% if not is_current_week %}<p class="center"><a href="{% url 'home_page' %}">Bu haftaya dön</a></p>{% endif %}
+
+    {% if chores %}
+      <div class="week">
+        {% for d in week %}
+          <section class="week-day{% if d.date == today %} is-today{% endif %}" aria-label="{{ d.date|date:'l j F' }}">
+            <h3>{{ d.date|date:"l" }} <small>{{ d.date|date:"j M" }}</small>{% if d.date == today %} <span class="badge badge--fresh">Bugün</span>{% endif %}</h3>
+            {% if d.entries %}
+              <ul class="chore-list">
+                {% for chore, log in d.entries %}{% include "home/_chore_entry.html" with day=d.date %}{% endfor %}
+              </ul>
+            {% else %}
+              <p class="muted small">Bu gün iş yok.</p>
+            {% endif %}
+          </section>
+        {% endfor %}
+      </div>
+
+      <details class="card card--soft chore-manage">
+        <summary>Tüm işleri düzenle ({{ chores|length }} / {{ max_chores }})</summary>
+        <ul class="member-list">
+          {% for chore in chores %}
+            <li class="member">
+              <span>{{ chore.title }} <small class="muted">· {{ chore.schedule_label }} · {% if chore.assigned_to %}{{ chore.assigned_to.display_name }}{% else %}Herkes{% endif %}</small></span>
+              <span class="item-actions">
+                <a class="btn btn--ghost btn--sm" href="{% url 'chore_edit' chore.pk %}" aria-label="Düzenle: {{ chore.title }}">✏️</a>
+                <form method="post" action="{% url 'chore_delete' chore.pk %}" onsubmit="return confirm('{{ chore.title|escapejs }} silinsin mi?');">
+                  {% csrf_token %}
+                  <button class="btn btn--ghost btn--sm" type="submit" aria-label="Sil: {{ chore.title }}">🗑️</button>
+                </form>
+              </span>
+            </li>
+          {% endfor %}
+        </ul>
+      </details>
+    {% else %}
+      <section class="card empty">
+        <span class="empty-icon" aria-hidden="true">🧹</span>
+        <p>Henüz ev işi yok. “Bulaşıkları boşalt — her gün — Herkes” gibi bir iş ekleyerek başla.</p>
+      </section>
+    {% endif %}
+  </section>
+{% endblock %}

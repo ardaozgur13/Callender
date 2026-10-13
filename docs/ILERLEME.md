@@ -8,8 +8,8 @@ Her aşama bitince Claude Code bu dosyayı günceller. Yeni oturumda önce bunu 
 | 2 | Kimlik doğrulama | ✅ |
 | 3 | Kişisel takvim | ✅ |
 | 4 | Aile grupları | ✅ |
-| 5 | Buzdolabı ve son kullanma | 🟨 sürüyor |
-| 6 | Ev işleri ve ev durumu | ⬜ |
+| 5 | Buzdolabı ve son kullanma | ✅ |
+| 6 | Ev işleri ve ev durumu | 🟨 sürüyor |
 | 7 | Cilalama ve yayın | ⬜ |
 
 Durumlar: ⬜ başlamadı · 🟨 sürüyor · ✅ bitti (kullanıcı onayladı)
@@ -79,3 +79,23 @@ Durumlar: ⬜ başlamadı · 🟨 sürüyor · ✅ bitti (kullanıcı onayladı)
 - **Limit:** 150 aktif (tüketilmemiş) ürün. Belge bunu aile için tanımlıyor; kişisel buzdolabına da aynı sınır uygulandı. Aile ya da kullanıcı satırı kilitlenerek kontrol edilir.
 - **Bugün sayfası:** 3 gün içinde biten ya da süresi geçmiş ürünler (bağlama göre), oradan "Tüketildi" denebilir.
 - **Migrate uygulandı** (2026-10-13), RLS açık. 110 test geçti (~4 dk).
+
+### Aşama 6
+- **Modeller (`home`):**
+  - `Chore`: `family` (zorunlu), `title` (80), `assigned_to` (boş = Herkes, SET_NULL), `weekday` (0–6, boş = her gün), `is_active`. Her hafta tekrar eder.
+  - `ChoreLog`: `(chore, date)` benzersiz, `done_by`, `done_at`.
+  - `HomeStatus`: `(family, kind)` benzersiz, `status`, `updated_by`, `updated_at`.
+- **Ev işleri sadece ailede:** Belgedeki modelde `family` zorunlu. Bireysel görünümde `/ev/` "bir aile seç" mesajı gösterir.
+- **Haftalık görünüm:** `/ev/` sayfasında Pazartesi–Pazar, önceki/sonraki hafta (`?hafta=YYYY-MM-DD`). "Yaptım" aç/kapat yapar ve kimin yaptığını yazar. Gelecek günler ve o güne planlanmamış işler işaretlenemez. Aynı anda iki işaretlemeye karşı benzersizlik kısıtı var.
+- **Atama:** Sadece aile üyelerine atanabilir (form queryset'i). Üye ayrılır ya da çıkarılırsa işleri "Herkes"e döner (`families.services._unassign_chores`).
+- **Limit:** Ailede 50 aktif iş (`limits.MAX_CHORES_PER_FAMILY`), aile satırı kilitlenerek kontrol edilir; pasif işler sayılmaz.
+- **Ev durumu kartları:** Belgedeki akışlar.
+  - Bulaşık: Boş → Dolu → Çalışıyor → Bitti → Boşaltılmalı → Boş.
+  - Çamaşır: Yıkanıyor → Yıkandı, serilmeli → Serildi → Kurudu, toplanmalı → Toplandı → (yeni yıkama).
+  - İlk durum: bulaşık "Boş", çamaşır "Toplandı". Kartlar ilk açılışta oluşturulur.
+  - Tek tıkla "Sonraki adım"; "Başka bir duruma geç / geri al" ile serbest seçim.
+  - Kartta "Son güncelleme: Ayşe, bugün 14:20 → Yıkandı" yazar. Saatten sonra gelen Türkçe ek (’de/’da) ses uyumuna göre değiştiği için ek kullanılmadı.
+- **Çakışma koruması:** Her durum formu kullanıcının gördüğü durumu (`expected`) gönderir. Bu arada başkası değiştirdiyse adım ilerletilmez ve "Can bu arada durumu … yaptı" mesajı çıkar; çift tıklama ya da iki kişinin aynı anda basması adımı iki kez atlatmaz.
+- **Güncelleme görünürlüğü:** Diğer üyenin değişikliği sayfa yenilenince görünür ("↻ Yenile" butonu). Canlı (otomatik) yenileme yok.
+- **Bugün sayfası:** Aile seçiliyse ev durumu kartları ve bugünün işleri; buradan da "Yaptım" ve "Sonraki adım" denebilir.
+- **Migrate uygulandı** (2026-10-13), RLS açık. 131 test geçti (~6 dk).

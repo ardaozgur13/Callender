@@ -81,6 +81,7 @@ def leave_family(membership):
         family = Family.objects.select_for_update().get(pk=membership.family_id)
         was_owner = membership.is_owner
         membership.delete()
+        _unassign_chores(membership.family_id, membership.user)
         remaining = family.memberships.order_by("joined_at", "pk")
         if not remaining.exists():
             family.delete()
@@ -90,6 +91,13 @@ def leave_family(membership):
             successor.role = FamilyMember.Role.OWNER
             successor.save(update_fields=["role"])
     return False
+
+
+def _unassign_chores(family_id, user):
+    """Ayrılan/çıkarılan üyenin ev işleri 'herkes'e döner."""
+    from home.services import unassign_member
+
+    unassign_member(family_id, user)
 
 
 def leave_all_families(user):
@@ -110,6 +118,7 @@ def remove_member(owner_membership, member_id):
     if target.pk == owner_membership.pk:
         raise FamilyError("Kendini çıkaramazsın; aileden ayrılmayı kullan.")
     target.delete()
+    _unassign_chores(target.family_id, target.user)
     return target
 
 

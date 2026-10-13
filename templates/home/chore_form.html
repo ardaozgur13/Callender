@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}İşi düzenle{% else %}İş ekle{% endif %}{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <h1>{% if is_edit %}İşi düzenle{% else %}Ev işi ekle{% endif %}</h1>
+    <p>👨‍👩‍👧 {% if is_edit %}{{ chore.family.name }}{% else %}{{ active_family.name }}{% endif %} ailesi · her hafta tekrar eder</p>
+  </header>
+
+  <section class="card">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "includes/form.html" with form=form %}
+      <div class="form-actions">
+        <button class="btn" type="submit">Kaydet</button>
+        <a class="btn btn--ghost" href="{% url 'home_page' %}">Vazgeç</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

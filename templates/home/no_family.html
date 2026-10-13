@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Ev{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <h1>Ev</h1>
+  </header>
+  <section class="card empty">
+    <span class="empty-icon" aria-hidden="true">🏡</span>
+    <p>Ev işleri ve bulaşık/çamaşır durumu aileyle paylaşılır.</p>
+    <p>{% if my_families %}Üstteki “Görünüm” seçiminden aileni seç.{% else %}<a href="{% url 'family_list' %}">Bir aile kur ya da koduyla katıl</a>.{% endif %}</p>
+  </section>
+{% endblock %}

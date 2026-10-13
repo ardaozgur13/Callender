@@ -39,10 +39,28 @@
     {% endif %}
   </section>
 
-  <div class="grid">
-    <section class="card card--soft" aria-labelledby="chores-title">
-      <h2 id="chores-title">🧺 Ev işleri</h2>
-      <p class="muted">Ev işleri yakında burada.</p>
+  {% if active_family %}
+    <section class="today" aria-labelledby="home-status-title">
+      <div class="section-head">
+        <h2 id="home-status-title">🏡 Ev durumu</h2>
+        <a class="btn btn--ghost btn--sm" href="{% url 'home_page' %}">Ev ›</a>
+      </div>
+      <div class="grid grid--2">
+        {% for card in statuses %}{% include "home/_status_card.html" with next="home" %}{% endfor %}
+      </div>
     </section>
-  </div>
+
+    <section class="today" aria-labelledby="chores-title">
+      <h2 id="chores-title">🧺 Bugünün ev işleri</h2>
+      {% if today_chores %}
+        <ul class="chore-list">
+          {% for chore, log in today_chores %}{% include "home/_chore_entry.html" with day=today next="home" %}{% endfor %}
+        </ul>
+      {% else %}
+        <p class="card card--soft muted">Bugün kimseye iş düşmemiş. <a href="{% url 'chore_create' %}">İş ekle</a></p>
+      {% endif %}
+    </section>
+  {% else %}
+    <p class="card card--soft muted">🧺 Ev işleri ve bulaşık/çamaşır durumu aile görünümünde çıkar.</p>
+  {% endif %}
 {% endblock %}

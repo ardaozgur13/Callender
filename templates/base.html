@@ -41,7 +41,11 @@
             <span class="nav-icon" aria-hidden="true">🥛</span>Buzdolabı
           </a>
         </li>
-        <li><span class="nav-item is-soon" aria-disabled="true" title="Yakında"><span class="nav-icon" aria-hidden="true">🧺</span>Ev</span></li>
+        <li>
+          <a class="nav-item" href="{% url 'home_page' %}"{% if active_nav == "home_chores" %} aria-current="page"{% endif %}>
+            <span class="nav-icon" aria-hidden="true">🧺</span>Ev
+          </a>
+        </li>
         <li>
           <a class="nav-item" href="{% url 'family_list' %}"{% if active_nav == "family" %} aria-current="page"{% endif %}>
             <span class="nav-icon" aria-hidden="true">👨‍👩‍👧</span>Aile

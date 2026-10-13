@@ -603,3 +603,62 @@ a.nav-item:hover { background: var(--cream-deep); color: var(--text); }
   background: var(--sage);
   font-size: var(--fs-sm);
 }
+
+/* ---------- Ev durumu ---------- */
+
+.status-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  background: var(--white-soft);
+  box-shadow: var(--shadow-soft);
+  border-top: 6px solid var(--blue);
+}
+.status-card--calm      { border-top-color: var(--status-fresh); }
+.status-card--busy      { border-top-color: var(--blue); }
+.status-card--attention { border-top-color: var(--status-soon); background: var(--cream); }
+
+.status-head { display: flex; align-items: center; gap: var(--space-3); }
+.status-head h3 { margin: 0; font-size: var(--fs-base); color: var(--text-soft); }
+.status-icon { font-size: 2rem; }
+.status-now { margin: 0; font-size: var(--fs-lg); font-weight: 800; }
+.status-who { margin: 0; font-size: var(--fs-sm); color: var(--text-soft); }
+.status-card form { margin: 0; }
+
+.status-pick summary { cursor: pointer; font-size: var(--fs-sm); color: var(--text-soft); }
+.status-options { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2) !important; }
+.status-options .is-current { background: var(--blue); opacity: 1; cursor: default; }
+
+/* ---------- Ev işleri ---------- */
+
+.week-label { align-self: center; font-size: var(--fs-sm); }
+.center { text-align: center; }
+.small { font-size: var(--fs-sm); margin: 0; }
+
+.week { display: grid; gap: var(--space-2); margin-bottom: var(--space-4); }
+@media (min-width: 1024px) {
+  .week { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+}
+
+.week-day {
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--white-soft);
+  box-shadow: var(--shadow-soft);
+}
+.week-day.is-today { outline: 3px solid var(--blue); }
+.week-day h3 { margin: 0 0 var(--space-2); font-size: var(--fs-base); }
+.week-day h3 small { color: var(--text-soft); font-weight: 600; }
+
+.chore-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.chore { display: flex; align-items: flex-start; gap: var(--space-2); }
+.chore form { margin: 0; }
+.chore-body { display: flex; flex-direction: column; min-width: 0; }
+.chore-title { font-weight: 700; overflow-wrap: anywhere; }
+.chore-meta { font-size: var(--fs-sm); color: var(--text-soft); }
+.chore.is-done .chore-title { text-decoration: line-through; color: var(--text-soft); }
+.check-btn.is-future { display: inline-block; opacity: 0.35; cursor: default; }
+
+.chore-manage summary { cursor: pointer; font-weight: 700; }

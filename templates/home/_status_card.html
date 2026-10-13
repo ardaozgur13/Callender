@@ -1,0 +1,40 @@
+{# Bulaşık / çamaşır durum kartı. Bağlam: card (HomeStatus), today, isteğe bağlı next ("home") #}
+<article class="status-card status-card--{{ card.tone }}" aria-labelledby="status-{{ card.kind }}">
+  <header class="status-head">
+    <span class="status-icon" aria-hidden="true">{{ card.icon }}</span>
+    <div>
+      <h3 id="status-{{ card.kind }}">{{ card.get_kind_display }}</h3>
+      <p class="status-now">{{ card.status_label }}</p>
+    </div>
+  </header>
+  <p class="status-who">
+    {% if card.updated_by %}
+      {# Saatten sonra Türkçe ek (’de/’da) ses uyumuna göre değiştiği için ek kullanılmıyor #}
+      Son güncelleme: <strong>{{ card.updated_by.display_name }}</strong>,
+      {% if card.updated_at|date:"Y-m-d" == today|date:"Y-m-d" %}bugün {{ card.updated_at|time:"H:i" }}{% else %}{{ card.updated_at|date:"j M H:i" }}{% endif %}
+      → “{{ card.status_label }}”
+    {% else %}
+      Henüz kimse güncellemedi
+    {% endif %}
+  </p>
+
+  <form method="post" action="{% url 'status_change' card.kind %}">
+    {% csrf_token %}
+    <input type="hidden" name="expected" value="{{ card.status }}">
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+    <button class="btn btn--block" type="submit">Sonraki adım: {{ card.next_label }} →</button>
+  </form>
+
+  <details class="status-pick">
+    <summary>Başka bir duruma geç / geri al</summary>
+    <form method="post" action="{% url 'status_change' card.kind %}" class="status-options">
+      {% csrf_token %}
+      <input type="hidden" name="expected" value="{{ card.status }}">
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+      {% for key, label in card.steps %}
+        <button class="btn btn--ghost btn--sm{% if key == card.status %} is-current{% endif %}" type="submit"
+                name="status" value="{{ key }}"{% if key == card.status %} aria-current="true" disabled{% endif %}>{{ label }}</button>
+      {% endfor %}
+    </form>
+  </details>
+</article>
