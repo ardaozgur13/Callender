@@ -10,7 +10,7 @@ Her aşama bitince Claude Code bu dosyayı günceller. Yeni oturumda önce bunu 
 | 4 | Aile grupları (davet kodu sınırı, silme kuralları) | ✅ (belge v1'e göre) | ⬜ |
 | 5 | Buzdolabı ve son kullanma | ✅ (belge v1'e göre) | ⬜ |
 | 6 | Ev işleri ve ev durumu | ✅ (belge v1'e göre) | ⬜ |
-| 7 | Cilalama, KVKK sayfaları, hesap silme/dışa aktarma, tam denetim, yayın | 🟨 Parça A sürüyor | ⬜ |
+| 7 | Cilalama, KVKK sayfaları, hesap silme/dışa aktarma, tam denetim, yayın | 🟨 Parça A bitti; Parça B denetim raporu verildi, onay bekleniyor | 🟨 rapor verildi |
 
 Durumlar: ⬜ başlamadı · 🟨 sürüyor · ✅ bitti (kullanıcı onayladı)
 
@@ -131,3 +131,8 @@ Durumlar: ⬜ başlamadı · 🟨 sürüyor · ✅ bitti (kullanıcı onayladı)
 - **Kısıtlar/indeksler (V3):** `UniqueConstraint(Lower("email"))`, `FoodItem` `CheckConstraint(family veya owner dolu)`, `CalendarItem(family, date)` ve `FoodItem(family, is_consumed, use_by)` indeksleri.
 - **Testler:** `core/test_runner.PoolerSafeTestRunner` test veritabanını `DROP DATABASE … WITH (FORCE)` ile siler; düz `python manage.py test` artık hatasız biter. Yeni testler: `accounts/tests_privacy.py` (onay, e-posta kısıtı, silme sonrası veri durumu, dışa aktarma, hata sayfaları), aile ve buzdolabı yetki testleri.
 - **Migration'lar (uygulanmadı, kullanıcı çalıştıracak):** `accounts 0002`, `calendar_app 0003`, `fridge 0003`.
+
+### Aşama 7, Parça B (güvenlik denetimi, 2026-10-13)
+- Parça A GitHub'a gönderildi (`250182c`). Gönderimden önce kontrol: 134 takip edilen dosya; `.env`, `.venv`, `__pycache__`, `staticfiles`, `settings.local.json`, `.vercel` takip dışı; tüm git geçmişinde gerçek şifre/anahtar/proje kimliği yok (sadece `.env.example` örnek değerleri).
+- **Parça A migration'ları (`accounts 0002`, `calendar_app 0003`, `fridge 0003`) henüz uygulanmadı:** `migrate` Claude Code otomatik güvenlik denetimine takıldı; kullanıcı çalıştıracak.
+- `/guvenlik`: `scan.sh` 13 bulgu grubu verdi, elle doğrulandı. Rapor (YÜKSEK 4, ORTA 5, DÜŞÜK 5, yanlış alarm 7) kullanıcıya sunuldu; onay bekleniyor, düzeltme yapılmadı.
