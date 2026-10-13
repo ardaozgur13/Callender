@@ -38,27 +38,56 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-`migrate` gerçek veritabanına yazar. Canlıya uygulamadan önce `.env` içindeki `DATABASE_URL`'in doğru projeyi gösterdiğinden emin ol.
+`migrate` gerçek veritabanına yazar. Hangi veritabanına yazdığından emin ol:
 
-## Vercel'e deploy
+- **Geliştirme veritabanı:** `.env` içindeki `DATABASE_URL` → `python manage.py migrate`
+- **Canlı veritabanı:** canlı adresi git'e girmeyen ayrı bir dosyada tut (`.env.production`, `.gitignore` kapsamında) ve sadece o komut için göster. Böylece şifre terminal geçmişine yazılmaz:
 
-1. Repoyu GitHub'a gönder, Vercel'de "Import Project" ile bağla (Framework: Other).
-2. Vercel > Settings > Environment Variables:
-   - `SECRET_KEY` (yerelden farklı, uzun rastgele değer)
-   - `DEBUG=False`
-   - `DATABASE_URL` (canlı Supabase pooler adresi, port 6543)
-   - `ALLOWED_HOSTS` (özel alan adı varsa; `.vercel.app` zaten ekli)
-   - `CSRF_TRUSTED_ORIGINS` (örn. `https://callender.vercel.app`)
-3. Deploy. `vercel.json` tüm istekleri `callender/wsgi.py`'ye yönlendirir.
-   Statik dosyaları WhiteNoise doğrudan sunar (`WHITENOISE_USE_FINDERS`), `collectstatic`/build adımı yoktur.
-4. Migration'ları yerelden canlı veritabanına uygula (yukarıya bak).
+  ```powershell
+  $env:CALLENDER_ENV_FILE = ".env.production"; python manage.py migrate; Remove-Item Env:CALLENDER_ENV_FILE
+  ```
+
+Her `migrate` sonunda `core/db.py` yeni tablolarda RLS'yi otomatik açar.
+
+## Canlıya çıkış kontrol listesi
+
+**Supabase (canlı proje)**
+- [ ] Canlı için geliştirmeden **ayrı** bir Supabase projesi var (bölge: Frankfurt).
+- [ ] Project Settings → Data API → **Enable Data API: kapalı**.
+- [ ] `supabase_check.sql`'deki 1. sorgu: tüm tablolarda `rowsecurity = true`; 2. sorgu: **boş** sonuç. Boş değilse aynı dosyadaki DÜZELTME bloğu çalıştırılır.
+- [ ] Veritabanı şifresi sadece harf ve rakam (URL'yi bozan `@ ? # / : %` yok) ve yalnızca `.env.production` + Vercel'de duruyor.
+- [ ] Yedekleme: plandaki yedekleme durumu kontrol edildi (ücretsiz planda proje 7 gün kullanılmazsa duraklatılabilir, yedek olanakları sınırlıdır).
+
+**Vercel**
+- [ ] Proje GitHub deposundan içe aktarıldı (Framework Preset: Other). `vercel.json` tüm istekleri `callender/wsgi.py`'ye yönlendirir; Python sürümü `.python-version` (3.12).
+- [ ] Environment Variables, **Production** ortamı:
+  - `SECRET_KEY`: yerelden farklı, yeni üretilmiş uzun değer
+  - `DEBUG`: `False`
+  - `DATABASE_URL`: **canlı** Supabase Transaction pooler adresi (port 6543, `?sslmode=require`)
+  - `CSRF_TRUSTED_ORIGINS`: `https://<proje>.vercel.app` (özel alan adı varsa o da, virgülle)
+  - `ALLOWED_HOSTS`: sadece özel alan adı varsa (`.vercel.app` kodda zaten var)
+- [ ] **Preview** ortamı: kendi `SECRET_KEY`'i ve **geliştirme** veritabanının `DATABASE_URL`'i. Preview asla canlı veritabanına bağlanmaz.
+- [ ] Development ortamı Vercel'de boş bırakılabilir (yerelde `.env` kullanılıyor).
+
+**Yayından önce / hemen sonra**
+- [ ] `python manage.py test` yeşil, `/guvenlik` raporunda açık YÜKSEK/KRİTİK yok.
+- [ ] Canlı veritabanına `migrate` (yukarıdaki komut).
+- [ ] Hukuki metinlerdeki `[köşeli parantez]` alanları dolduruldu, metinler bir uzmana okutuldu.
+- [ ] Canlı adreste: kayıt ol → çıkış → giriş; tarayıcı geliştirici araçlarında yanıt başlıklarında `Content-Security-Policy`, `Strict-Transport-Security` var; `http://` adresi `https://`'e yönleniyor; `/admin/` 404.
+- [ ] Vercel → Logs'ta hata yok; loglarda e-posta/parola/davet kodu görünmüyor.
 
 ## Yapı
 
 ```
 callender/      proje ayarları, urls, wsgi
-core/           ortak: limits.py (tüm limitler), ana sayfa
-accounts/ calendar_app/ families/ fridge/ home/   ilgili aşamalarda dolacak uygulamalar
-templates/      base.html ve sayfa şablonları
+core/           limits.py (tüm limitler), Bugün sayfası, hukuki sayfalar, deneme sınırı (AuthAttempt),
+                güvenlik başlıkları middleware'i, RLS kancası (db.py), test çalıştırıcısı
+accounts/       kullanıcı, kayıt/giriş, ayarlar, hesap silme, veri dışa aktarma
+calendar_app/   takvim (aylık/gün görünümü, yıllık tekrar, günlük limit)
+families/       aileler, davet kodu, bağlam seçici, aile içi yetki (permissions.py)
+fridge/         buzdolabı, raf ömrü önerileri, SKT
+home/           ev işleri, bulaşık/çamaşır durumu
+templates/      base.html ve sayfa şablonları (satır içi JS yok; CSP)
 static/css/     theme.css (renk değişkenleri), base.css (düzen ve bileşenler)
+static/js/      app.js (onaylar, bağlam seçici, kopyalama), form yardımcıları
 ```

@@ -1,9 +1,13 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "builds": [
     {
       "src": "callender/wsgi.py",
       "use": "@vercel/python",
-      "config": { "maxLambdaSize": "15mb" }
+      "config": {
+        "maxLambdaSize": "15mb",
+        "excludeFiles": "{.claude/**,docs/**,**/tests.py,**/tests_*.py,.env.example,KURULUM.md}"
+      }
     }
   ],
   "routes": [

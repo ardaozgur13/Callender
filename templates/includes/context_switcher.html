@@ -4,7 +4,7 @@
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ request.get_full_path }}">
     <label for="context-select">Görünüm</label>
-    <select id="context-select" name="family" onchange="this.form.submit()">
+    <select id="context-select" name="family" data-autosubmit>
       <option value=""{% if not active_family %} selected{% endif %}>👤 Bireysel</option>
       {% for family in my_families %}
         <option value="{{ family.pk }}"{% if active_family and active_family.pk == family.pk %} selected{% endif %}>👨‍👩‍👧 {{ family.name }}</option>

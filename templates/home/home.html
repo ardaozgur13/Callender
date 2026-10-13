@@ -55,7 +55,7 @@
               <span>{{ chore.title }} <small class="muted">· {{ chore.schedule_label }} · {% if chore.assigned_to %}{{ chore.assigned_to.display_name }}{% else %}Herkes{% endif %}</small></span>
               <span class="item-actions">
                 <a class="btn btn--ghost btn--sm" href="{% url 'chore_edit' chore.pk %}" aria-label="Düzenle: {{ chore.title }}">✏️</a>
-                <form method="post" action="{% url 'chore_delete' chore.pk %}" onsubmit="return confirm('{{ chore.title|escapejs }} silinsin mi?');">
+                <form method="post" action="{% url 'chore_delete' chore.pk %}" data-confirm="{{ chore.title }} silinsin mi?">
                   {% csrf_token %}
                   <button class="btn btn--ghost btn--sm" type="submit" aria-label="Sil: {{ chore.title }}">🗑️</button>
                 </form>

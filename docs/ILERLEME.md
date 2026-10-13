@@ -10,7 +10,7 @@ Her aşama bitince Claude Code bu dosyayı günceller. Yeni oturumda önce bunu 
 | 4 | Aile grupları (davet kodu sınırı, silme kuralları) | ✅ (belge v1'e göre) | ⬜ |
 | 5 | Buzdolabı ve son kullanma | ✅ (belge v1'e göre) | ⬜ |
 | 6 | Ev işleri ve ev durumu | ✅ (belge v1'e göre) | ⬜ |
-| 7 | Cilalama, KVKK sayfaları, hesap silme/dışa aktarma, tam denetim, yayın | 🟨 Parça A bitti; Parça B denetim raporu verildi, onay bekleniyor | 🟨 rapor verildi |
+| 7 | Cilalama, KVKK sayfaları, hesap silme/dışa aktarma, tam denetim, yayın | 🟨 Parça A ve B kodu bitti; canlıya çıkış kullanıcı adımlarında | 🟨 bulgular kapatıldı, yeniden tarandı |
 
 Durumlar: ⬜ başlamadı · 🟨 sürüyor · ✅ bitti (kullanıcı onayladı)
 
@@ -105,17 +105,17 @@ Durumlar: ⬜ başlamadı · 🟨 sürüyor · ✅ bitti (kullanıcı onayladı)
 ### Aşama 7 / v2 eksik listesi (Aşama 1–6, belge v2'ye göre)
 | # | Eksik | Nerede kapatılıyor |
 |---|---|---|
-| G1 | Supabase Data API kapatılmadı; RLS açık ama `anon`/`authenticated` yetkileri geri alınmadı | B (kullanıcı adımı + `supabase_check.sql`) |
-| G2 | Giriş denemesi sınırı (`AuthAttempt`) yok | B |
-| G3 | Davet kodu deneme sınırı, günde 3 aile sınırı yok; hata mesajları tek tip değil | B |
-| G4 | Güvenlik başlıkları (CSP, Permissions-Policy) yok; satır içi JS var | B |
-| G5 | Django admin `/admin/` adresinde açık | B |
-| G6 | `SECURE_SSL_REDIRECT`, HSTS, `DATA_UPLOAD_MAX_MEMORY_SIZE` eksik | B |
-| G7 | `requirements.txt` sürümleri `==` ile sabit değil | B |
+| G1 | Supabase Data API kapatılmadı; RLS açık ama `anon`/`authenticated` yetkileri geri alınmadı | B: kullanıcı adımı (README kontrol listesi) |
+| G2 | Giriş denemesi sınırı (`AuthAttempt`) yok | **B, kapatıldı** |
+| G3 | Davet kodu deneme sınırı, günde 3 aile sınırı yok; hata mesajları tek tip değil | **B, kapatıldı** |
+| G4 | Güvenlik başlıkları (CSP, Permissions-Policy) yok; satır içi JS var | **B, kapatıldı** |
+| G5 | Django admin `/admin/` adresinde açık | **B, kapatıldı** |
+| G6 | `SECURE_SSL_REDIRECT`, HSTS, `DATA_UPLOAD_MAX_MEMORY_SIZE` eksik | **B, kapatıldı** |
+| G7 | `requirements.txt` sürümleri `==` ile sabit değil | **B, kapatıldı** |
 | V1 | `CalendarItem.owner` / `FoodItem.owner` CASCADE idi (SET_NULL olmalı) | **A, kapatıldı** |
 | V2 | Aile kaydını her üye düzenleyip silebiliyordu (üye kendi eklediğini, kurucu her şeyi olmalı) | **A, kapatıldı** |
 | V3 | `Lower(email)` benzersizlik kısıtı, `FoodItem` CheckConstraint, `(family,date)` ve `(family,is_consumed,use_by)` indeksleri yoktu | **A, kapatıldı** |
-| V4 | Doğum yılı bilinmiyorsa yaş gizlenemiyor (tarih alanı yıl istiyor) | B |
+| V4 | Doğum yılı bilinmiyorsa yaş gizlenemiyor (tarih alanı yıl istiyor) | Sonraya bırakıldı (kullanıcı kararı) |
 
 **Paket kararı:** v2 izinli listesinde `python-dotenv` yok (`django-environ` var). `python-dotenv` sadece yerelde `.env` okuyor, Vercel'de kullanılmıyor, bilinen açığı yok; kullanıcı onayıyla (2026-10-13) **kalıyor**, belgeye istisna olarak işlendi.
 
@@ -136,3 +136,18 @@ Durumlar: ⬜ başlamadı · 🟨 sürüyor · ✅ bitti (kullanıcı onayladı)
 - Parça A GitHub'a gönderildi (`250182c`). Gönderimden önce kontrol: 134 takip edilen dosya; `.env`, `.venv`, `__pycache__`, `staticfiles`, `settings.local.json`, `.vercel` takip dışı; tüm git geçmişinde gerçek şifre/anahtar/proje kimliği yok (sadece `.env.example` örnek değerleri).
 - **Parça A migration'ları (`accounts 0002`, `calendar_app 0003`, `fridge 0003`) henüz uygulanmadı:** `migrate` Claude Code otomatik güvenlik denetimine takıldı; kullanıcı çalıştıracak.
 - `/guvenlik`: `scan.sh` 13 bulgu grubu verdi, elle doğrulandı. Rapor (YÜKSEK 4, ORTA 5, DÜŞÜK 5, yanlış alarm 7) kullanıcıya sunuldu; onay bekleniyor, düzeltme yapılmadı.
+- **Kullanıcı kararı:** 1–11 düzeltilsin; 12 (davet kodu süresi) ve 13 (V4, bilinmeyen doğum yılı) sonraya. `pip-audit` kurulsun (sadece yerel `.venv`, `requirements.txt`'e girmez).
+- **Supabase kontrol (kullanıcı, 3. sorgu):** `postgres` `rolbypassrls = true` → Django RLS'den etkilenmiyor; Data API kapatma ve yetki geri alma uygulamayı bozmaz. 1. ve 2. sorgunun çıktısı ayrıca alınacak (SQL Editor sadece son sorgunun sonucunu gösteriyor).
+
+**Parça B düzeltmeleri**
+1. **Giriş sınırı (G2):** `core.AuthAttempt` + `core/attempts.py`. Aynı e-postaya 15 dakikada 5 yanlış deneme olunca giriş reddedilir (doğru parolayla bile); başarılı girişte sayaç silinir; eski kayıtlar tembel temizlenir. Kayıtlı olmayan e-postalar da aynı davranır (hesap var/yok sızmaz). Admin girişi zaten kapatıldı.
+2. **Davet kodu (G3):** Kullanıcı başına 15 dakikada 5 yanlış deneme. Kod yoksa da aile doluysa da tek mesaj: "Kod geçersiz…". Deneme kaydı `transaction.atomic` dışında yazılıyor (hata ile geri alınmasın).
+3. **Günde 3 aile (G3):** Kuruluşlar `AuthAttempt(kind="create")` olarak ayrıca kaydediliyor. İlk sürüm var olan aileleri sayıyordu; test, kur-sil döngüsüyle sınırın delinebildiğini yakaladı ve düzeltildi.
+4. **CSP ve satır içi JS (G4):** `core/middleware.SecurityHeadersMiddleware` (belgedeki CSP + Permissions-Policy). 11 satır içi `onsubmit`/`onchange` ve bir `<script>` bloğu kaldırıldı; yerine `static/js/app.js` + `data-confirm` / `data-autosubmit` / `data-copy` nitelikleri. Testte şablonlarda satır içi JS olmadığı kontrol ediliyor. Not: CSP yerelde de açık; Django'nun DEBUG hata sayfası stilsiz görünebilir.
+5. **Üretim ayarları (G6):** `X_FRAME_OPTIONS=DENY`, `SECURE_REFERRER_POLICY`, `SESSION_COOKIE_HTTPONLY/SAMESITE`, `DATA_UPLOAD_MAX_MEMORY_SIZE=100 KB`; DEBUG=False iken `SECURE_SSL_REDIRECT`, HSTS 1 yıl + alt alan adları.
+6. **Admin (G5):** `/admin/` URL'i kaldırıldı (404). `accounts/admin.py` alanları tek tek yazıldı (`__all__` yok).
+7. **Bağımlılıklar (G7):** `requirements.txt` `==` ile sabit (kurulu ve test edilmiş sürümler). `pip-audit 2.10.1`: **bilinen açık yok**.
+8. **Diğer:** `form.html`'de `|safe` kaldırıldı (Django parola yardımı zaten güvenli işaretli, liste olarak görünmeye devam ediyor); pasif ev işi "yaptım" olarak işaretlenemiyor.
+- **Yayın hazırlığı:** `vercel.json` (`$schema`, testler/docs/.claude canlı pakete girmiyor), `.python-version` = 3.12, README'de canlıya çıkış kontrol listesi. Ayarlar `CALLENDER_ENV_FILE` ile başka bir env dosyası okuyabiliyor (canlıya migrate için `.env.production`; şifre terminal geçmişine yazılmaz).
+- **Yeniden tarama:** `scan.sh` 8 grup veriyor; 7'si ilk raporda doğrulanan yanlış alarmlar. 8.'si ("deneme sınırı görünmüyor") da yanlış alarm: script `LoginAttempt`/`JoinAttempt`/`throttle` adlarını arıyor, belgenin istediği `AuthAttempt` adını tanımıyor.
+- **Uygulanmamış migration'lar:** `accounts 0002`, `calendar_app 0003`, `fridge 0003`, `core 0001`. `migrate` otomatik güvenlik denetimine takılıyor; kullanıcı çalıştıracak.

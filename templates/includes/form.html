@@ -16,7 +16,7 @@
     <div class="field{% if field.errors %} field--error{% endif %}">
       <label for="{{ field.id_for_label }}">{{ field.label }}</label>
       {{ field }}
-      {% if field.help_text %}<small class="field-help" id="{{ field.auto_id }}_helptext">{{ field.help_text|safe }}</small>{% endif %}
+      {% if field.help_text %}<small class="field-help" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</small>{% endif %}
       {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
     </div>
   {% endif %}

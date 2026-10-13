@@ -14,7 +14,10 @@ class UserCreationAdminForm(AdminUserCreationForm):
 class UserChangeAdminForm(UserChangeForm):
     class Meta:
         model = User
-        fields = "__all__"
+        fields = (
+            "email", "password", "display_name", "is_active", "is_staff", "is_superuser",
+            "groups", "user_permissions", "last_login", "date_joined",
+        )
 
 
 @admin.register(User)

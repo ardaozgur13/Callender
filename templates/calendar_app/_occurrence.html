@@ -28,7 +28,7 @@
   <div class="item-actions">
     <a class="btn btn--ghost btn--sm" href="{% url 'item_edit' item.pk %}" aria-label="Düzenle: {{ item.title }}">✏️</a>
     <form method="post" action="{% url 'item_delete' item.pk %}"
-          onsubmit="return confirm('Bu kaydı silmek istediğine emin misin?{% if item.repeat == "yearly" %} Her yıl tekrar eden kaydın tamamı silinir.{% endif %}');">
+          data-confirm="Bu kaydı silmek istediğine emin misin?{% if item.repeat == "yearly" %} Her yıl tekrar eden kaydın tamamı silinir.{% endif %}">
       {% csrf_token %}
       <input type="hidden" name="next" value="{{ request.get_full_path }}">
       <button type="submit" class="btn btn--ghost btn--sm" aria-label="Sil: {{ item.title }}">🗑️</button>

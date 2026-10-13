@@ -27,7 +27,7 @@
     </form>
     {% if not compact %}{% if not food.family_id or food.owner_id == user.pk or food.family_id in owned_family_ids %}
       <a class="btn btn--ghost btn--sm" href="{% url 'food_edit' food.pk %}" aria-label="Düzenle: {{ food.name }}">✏️</a>
-      <form method="post" action="{% url 'food_delete' food.pk %}" onsubmit="return confirm('{{ food.name|escapejs }} silinsin mi?');">
+      <form method="post" action="{% url 'food_delete' food.pk %}" data-confirm="{{ food.name }} silinsin mi?">
         {% csrf_token %}
         <button class="btn btn--ghost btn--sm" type="submit" aria-label="Sil: {{ food.name }}">🗑️</button>
       </form>

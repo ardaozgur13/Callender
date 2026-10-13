@@ -3,7 +3,8 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils import timezone
 
-from core import limits
+from core import attempts, limits
+from core.models import AuthAttempt
 
 from .models import User, normalize_email
 
@@ -88,6 +89,20 @@ class LoginForm(AuthenticationForm):
         "invalid_login": "E-posta veya parola hatalı. Tekrar dener misin?",
         "inactive": "Bu hesap etkin değil.",
     }
+
+    def clean(self):
+        """Aynı e-postaya art arda yanlış parola denemesini sınırlar (bölüm 12.4)."""
+        email = normalize_email(self.cleaned_data.get("username"))
+        if email and attempts.is_locked(AuthAttempt.Kind.LOGIN, email):
+            raise forms.ValidationError(attempts.lockout_message(AuthAttempt.Kind.LOGIN), code="locked")
+        try:
+            cleaned = super().clean()
+        except forms.ValidationError:
+            if email:
+                attempts.record_failure(AuthAttempt.Kind.LOGIN, email)
+            raise
+        attempts.clear(AuthAttempt.Kind.LOGIN, email)
+        return cleaned
 
 
 class DisplayNameForm(forms.ModelForm):

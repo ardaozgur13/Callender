@@ -60,6 +60,8 @@ def week_schedule(family, days):
 
 def toggle_done(chore, day, user):
     """'Yaptım' aç/kapat. Gelecek günler işaretlenemez. Yeni durumda True döner."""
+    if not chore.is_active:
+        raise HomeError("Bu iş pasif; önce aktif hale getir.")
     if day > timezone.localdate():
         raise HomeError("Gelecekteki bir gün için “yaptım” denemez.")
     if not chore.occurs_on(day):

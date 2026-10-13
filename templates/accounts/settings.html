@@ -56,7 +56,7 @@
       <li>Bir ailenin kurucusuysan kuruculuk en eski üyeye geçer; ailede başka kimse yoksa aile silinir.</li>
     </ul>
     <form method="post" action="{% url 'delete_account' %}" novalidate
-          onsubmit="return confirm('Hesabını kalıcı olarak silmek istediğine emin misin?');">
+          data-confirm="Hesabını kalıcı olarak silmek istediğine emin misin?">
       {% csrf_token %}
       {% include "includes/form.html" with form=delete_form %}
       <button class="btn btn--danger" type="submit">Hesabımı kalıcı olarak sil</button>

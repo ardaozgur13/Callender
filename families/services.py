@@ -6,8 +6,10 @@ import secrets
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.utils import timezone
 
-from core import limits
+from core import attempts, limits
+from core.models import AuthAttempt
 
 from .models import Family, FamilyMember
 
@@ -47,28 +49,52 @@ def _check_family_limit(user):
         raise FamilyError(f"En fazla {limits.MAX_FAMILIES_PER_USER} aileye üye olabilirsin.")
 
 
+INVALID_CODE_MESSAGE = "Kod geçersiz. Kodu kontrol edip tekrar dener misin?"
+
+
 def create_family(user, name):
     with transaction.atomic():
         _lock_user(user)
         _check_family_limit(user)
+        # Kötüye kullanım önleme: bugün (yerel saatle) kurulan aile sayısı. Kuruluşlar ayrı kaydedilir;
+        # aile sonradan silinse de sayılır, yoksa kur-sil döngüsüyle sınır delinirdi.
+        day_start = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
+        created_today = AuthAttempt.objects.filter(
+            kind=AuthAttempt.Kind.FAMILY_CREATE, key=str(user.pk), created_at__gte=day_start
+        )
+        if created_today.count() >= limits.FAMILY_CREATE_PER_DAY:
+            raise FamilyError(f"Bir günde en fazla {limits.FAMILY_CREATE_PER_DAY} aile kurabilirsin. Yarın tekrar dene.")
         family = Family.objects.create(name=name, invite_code=generate_invite_code(), created_by=user)
         FamilyMember.objects.create(family=family, user=user, role=FamilyMember.Role.OWNER)
+        AuthAttempt.objects.filter(kind=AuthAttempt.Kind.FAMILY_CREATE, created_at__lt=day_start).delete()
+        AuthAttempt.objects.create(kind=AuthAttempt.Kind.FAMILY_CREATE, key=str(user.pk))
     return family
 
 
 def join_family(user, code):
+    """
+    Kodla katılma. Yanlış kod denemeleri kullanıcı başına sınırlıdır (JOIN_MAX_ATTEMPTS).
+    Kod yoksa da aile doluysa da aynı mesaj verilir; kodun geçerli olup olmadığı sızmaz.
+    """
+    key = str(user.pk)
+    if attempts.is_locked(AuthAttempt.Kind.JOIN, key):
+        raise FamilyError(attempts.lockout_message(AuthAttempt.Kind.JOIN))
     code = normalize_code(code)
     with transaction.atomic():
         _lock_user(user)
-        family = Family.objects.select_for_update().filter(invite_code=code).first()
-        if not family:
-            raise FamilyError("Bu kodla bir aile bulamadık. Kodu kontrol eder misin?")
-        if FamilyMember.objects.filter(family=family, user=user).exists():
-            raise FamilyError(f"Zaten “{family.name}” ailesinin üyesisin.")
         _check_family_limit(user)
-        if family.memberships.count() >= limits.MAX_FAMILY_MEMBERS:
-            raise FamilyError(f"Bu aile dolu; bir ailede en fazla {limits.MAX_FAMILY_MEMBERS} kişi olabilir.")
-        FamilyMember.objects.create(family=family, user=user, role=FamilyMember.Role.MEMBER)
+        family = Family.objects.select_for_update().filter(invite_code=code).first()
+        if family and FamilyMember.objects.filter(family=family, user=user).exists():
+            raise FamilyError(f"Zaten “{family.name}” ailesinin üyesisin.")
+        if family and family.memberships.count() < limits.MAX_FAMILY_MEMBERS:
+            FamilyMember.objects.create(family=family, user=user, role=FamilyMember.Role.MEMBER)
+        else:
+            family = None
+    if family is None:
+        # Deneme kaydı işlem dışında yazılır (hata ile birlikte geri alınmasın)
+        attempts.record_failure(AuthAttempt.Kind.JOIN, key)
+        raise FamilyError(INVALID_CODE_MESSAGE)
+    attempts.clear(AuthAttempt.Kind.JOIN, key)
     return family
 
 

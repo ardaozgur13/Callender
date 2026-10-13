@@ -21,6 +21,13 @@ USER_NAME_MAX = 40                  # Kullanıcı görünen adı
 USER_NAME_MIN = 2                   # Kullanıcı görünen adı en az
 PASSWORD_MIN = 8                    # Parola en az
 
+# Deneme sınırları (kaba kuvvete karşı; anahtar IP değil hesap, bkz. core.AuthAttempt)
+LOGIN_MAX_ATTEMPTS = 5              # Aynı e-postaya art arda yanlış parola
+LOGIN_LOCKOUT_MINUTES = 15
+JOIN_MAX_ATTEMPTS = 5               # Bir kullanıcının yanlış davet kodu denemesi
+JOIN_LOCKOUT_MINUTES = 15
+FAMILY_CREATE_PER_DAY = 3           # Bir kullanıcının bir günde kurabileceği aile sayısı
+
 # Aile davet kodu: karışabilen 0/O/1/I karakterleri hariç
 INVITE_CODE_LENGTH = 8
 INVITE_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"

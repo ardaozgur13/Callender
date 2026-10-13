@@ -18,7 +18,7 @@
     </div>
     {% if membership.is_owner %}
       <form method="post" class="inline-form"
-            onsubmit="return confirm('Yeni kod oluşturulunca eski kod çalışmaz. Devam edilsin mi?');">
+            data-confirm="Yeni kod oluşturulunca eski kod çalışmaz. Devam edilsin mi?">
         {% csrf_token %}
         <input type="hidden" name="action" value="regenerate">
         <button class="btn btn--ghost btn--sm" type="submit">🔄 Yeni kod oluştur</button>
@@ -36,7 +36,7 @@
             {% if m.is_owner %}<span class="badge badge--fresh">Kurucu</span>{% endif %}
           </span>
           {% if membership.is_owner and not m.is_owner %}
-            <form method="post" onsubmit="return confirm('{{ m.user.display_name|escapejs }} aileden çıkarılsın mı?');">
+            <form method="post" data-confirm="{{ m.user.display_name }} aileden çıkarılsın mı?">
               {% csrf_token %}
               <input type="hidden" name="action" value="remove">
               <input type="hidden" name="member_id" value="{{ m.pk }}">
@@ -67,30 +67,17 @@
     </p>
     <div class="form-actions">
       <form method="post" action="{% url 'family_leave' family.pk %}"
-            onsubmit="return confirm('“{{ family.name|escapejs }}” ailesinden ayrılmak istediğine emin misin?');">
+            data-confirm="“{{ family.name }}” ailesinden ayrılmak istediğine emin misin?">
         {% csrf_token %}
         <button class="btn btn--secondary" type="submit">Aileden ayrıl</button>
       </form>
       {% if membership.is_owner %}
         <form method="post" action="{% url 'family_delete' family.pk %}"
-              onsubmit="return confirm('Aile ve tüm aile kayıtları kalıcı olarak silinecek. Emin misin?');">
+              data-confirm="Aile ve tüm aile kayıtları kalıcı olarak silinecek. Emin misin?">
           {% csrf_token %}
           <button class="btn btn--danger" type="submit">Aileyi sil</button>
         </form>
       {% endif %}
     </div>
   </section>
-{% endblock %}
-
-{% block extra_js %}
-  <script>
-    // Davet kodunu panoya kopyala
-    document.querySelectorAll("[data-copy]").forEach(function (button) {
-      button.addEventListener("click", function () {
-        var text = document.querySelector(button.dataset.copy).textContent.trim();
-        var done = function () { button.textContent = "Kopyalandı ✓"; setTimeout(function () { button.textContent = "Kopyala"; }, 2000); };
-        if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done); } else { done(); }
-      });
-    });
-  </script>
 {% endblock %}

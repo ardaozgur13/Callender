@@ -14,8 +14,10 @@ from core import limits
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Yerelde .env dosyasını yükle; Vercel'de dosya yoktur, ortam değişkenleri kullanılır
-load_dotenv(BASE_DIR / ".env")
+# Yerelde .env dosyasını yükle; Vercel'de dosya yoktur, ortam değişkenleri kullanılır.
+# CALLENDER_ENV_FILE başka bir dosyayı gösterebilir (ör. canlıya migrate için .env.production);
+# böylece canlı veritabanı şifresi terminal geçmişine yazılmaz. Var olan ortam değişkenleri ezilmez.
+load_dotenv(os.environ.get("CALLENDER_ENV_FILE") or BASE_DIR / ".env")
 
 
 def env_required(name):
@@ -55,6 +57,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "core.middleware.SecurityHeadersMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -136,9 +139,19 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 WHITENOISE_USE_FINDERS = True
 
-# Canlı ortam güvenlik ayarları (Vercel HTTPS arkasında çalışır)
+# Güvenlik ayarları (docs/callender.md bölüm 12.5)
+X_FRAME_OPTIONS = "DENY"
+SECURE_REFERRER_POLICY = "same-origin"
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+DATA_UPLOAD_MAX_MEMORY_SIZE = 100_000  # 100 KB; formlarımız birkaç KB'ı geçmez
+
+# Canlı ortam (Vercel HTTPS proxy arkasında çalışır)
 if not DEBUG:
+    SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31_536_000  # 1 yıl
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_CONTENT_TYPE_NOSNIFF = True

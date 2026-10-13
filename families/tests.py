@@ -50,7 +50,7 @@ class FamilyServiceTests(TestCase):
         self.assertEqual(member.role, FamilyMember.Role.MEMBER)
 
     def test_wrong_code(self):
-        with self.assertRaisesMessage(services.FamilyError, "Bu kodla bir aile bulamadık"):
+        with self.assertRaisesMessage(services.FamilyError, "Kod geçersiz"):
             services.join_family(self.can, "ZZZZZZZZ")
 
     def test_already_member(self):
@@ -72,7 +72,7 @@ class FamilyServiceTests(TestCase):
         family = services.create_family(self.ayse, "Kalabalık")
         for i in range(limits.MAX_FAMILY_MEMBERS - 1):
             services.join_family(make_user(f"Uye{i}"), family.invite_code)
-        with self.assertRaisesMessage(services.FamilyError, "Bu aile dolu"):
+        with self.assertRaisesMessage(services.FamilyError, "Kod geçersiz"):
             services.join_family(self.can, family.invite_code)
 
     def test_regenerate_invalidates_old_code(self):
@@ -156,7 +156,7 @@ class FamilyViewTests(TestCase):
     def test_wrong_code_shows_message(self):
         self.client.force_login(self.can)
         response = self.client.post(reverse("family_list"), {"action": "join", "join-code": "YANLIS99"})
-        self.assertContains(response, "Bu kodla bir aile bulamadık")
+        self.assertContains(response, "Kod geçersiz")
 
     def test_member_cannot_rename_or_delete(self):
         services.join_family(self.can, self.family.invite_code)
